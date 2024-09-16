@@ -12,6 +12,8 @@ from config import JWT_SECRET_KEY
 app = Flask(__name__)
 
 # App setup
+# TODO: Also have to set settings for identity/refresh tokens
+# TODO: For all routes, return refresh/access token
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 jwt = JWTManager(app)
 
@@ -43,8 +45,13 @@ def register():
 
 
 @app.route('/api/v1/pull_contacts', methods=['GET'])
+@jwt_required()
 def pull_contacts():
-    return
+    # Access the identity of the current user with get_jwt_identity
+    # TODO: Finish this with real database
+    current_user = get_jwt_identity()
+    print(f'Currently logged in as {current_user}')
+    return jsonify(users={'a': 'a'}), 200
 
 
 @app.route('/api/v1/upload_image', methods=['POST'])
