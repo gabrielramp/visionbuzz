@@ -7,6 +7,7 @@ import psycopg
 - delete a user
 - delete a contact
 - TODO: Figure out if we need something to do w/ embeddings
+- TODO: store embeddings (WILL NEED UID AND CID)
 """
 
 
@@ -53,8 +54,28 @@ def db_delete_user(uid: int) -> bool:
             return True
 
 
-def db_add_contact(uid):
-    return
+def db_add_contact(uid: int) -> int:
+    """
+    NOTE: The user should not have access to this
+          At first, this should make temp user and connect embeddings to it
+    """
+    with psycopg.connect("dbname=test user=postgres") as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO contacts (uid, temp)
+                    DEFAULT VALUES (%s, %s)
+                """,
+                (uid, True)
+            )
+
+            # cur.execute("SELECT * FROM test")
+            cur.fetchone()
+            cid = cur[0]
+
+            # Make the changes to the database persistent
+            conn.commit()
+            return cid
 
 
 def db_delete_contact(uid, cid):
