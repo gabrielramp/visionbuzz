@@ -13,6 +13,8 @@ CREATE TABLE contacts (
     last_seen   timestamptz
 );
 
+/* TODO: Change this depending on how they finally end up implementing the 
+         embeddings*/
 CREATE TABLE embeddings (
     cid integer REFERENCES contacts(cid),
     uid integer REFERENCES users(uid),
