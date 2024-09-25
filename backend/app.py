@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import os
 
 from flask import Flask
 from flask import request
 from flask import jsonify
 
 from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_refresh_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
@@ -17,6 +19,8 @@ app = Flask(__name__)
 # TODO: Also have to set settings for identity/refresh tokens
 # TODO: For all routes, return refresh/access token
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
 
 
@@ -29,7 +33,8 @@ def login():
     if username != "test" or password != "test":
         return jsonify({"msg": "Bad username or password"}), 401
     access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
+    refresh_token = create_refresh_token(identity=username)
+    return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 
 @app.route("/api/v1/register", methods=["POST"])
@@ -43,6 +48,15 @@ def register():
 
     # TODO: Save user to database here with hashed password
     access_token = create_access_token(identity=username)
+    refresh_token = create_refresh_token(identity=username)
+    return jsonify(access_token=access_token, refresh_token=refresh_token)
+
+
+@app.route("/api/v1/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
 
 
