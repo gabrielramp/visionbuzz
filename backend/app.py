@@ -77,18 +77,29 @@ def test_upload_image():
     for testing the bluetooth device and seeing if it works.
     """
     file = request.files['image'].read()
+    upload_folder = 'test_img_folder'
     filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
 
-    with open(filename, 'wb') as f:
+    os.makedirs(upload_folder, exist_ok=True)
+    file_path = os.path.join(upload_folder, filename)
+    with open(file_path, 'wb') as f:
         f.write(file)
 
-    return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
-
+    return jsonify({"message": "File uploaded successfully", "filename":
+                    filename}), 200
 
 
 @app.route("/api/v1/upload_image", methods=["POST"])
 def upload_image():
-    return
+    """
+    Submits an image for the AI people to do their thing
+    TODO: Don't send request number cause this is just gonna bounce back from
+          the mini hardware device
+    """
+    file = request.files['image'].read()
+
+    # NOTE: file is in raw byte form, but sould be JPG
+    return jsonify({'message': 'Image sent successfully'}), 200
 
 
 @app.route("/api/v1/edit_contact", methods=["PATCH"])
