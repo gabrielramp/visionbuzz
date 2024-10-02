@@ -1,5 +1,9 @@
-from datetime import datetime, timedelta
+import hashlib
+import hmac
 import os
+
+from datetime import datetime, timedelta
+from argon2 import PasswordHasher
 
 from flask import Flask
 from flask import request
@@ -11,17 +15,37 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
-from config import JWT_SECRET_KEY
+from config import JWT_SECRET_KEY, PASSWORD_PEPPER
+
+from utils.db import db_check_user_taken, db_create_user, db_get_pwd_hash
 
 app = Flask(__name__)
 
-# App setup
-# TODO: Also have to set settings for identity/refresh tokens
-# TODO: For all routes, return refresh/access token
+### FLASK SETUP ###
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 jwt = JWTManager(app)
+
+ph = PasswordHasher()
+
+
+### HELPER FUNCTIONS ###
+
+
+def secure_password(pwd: str) -> str:
+    enc_pwd = ph.hash(pwd)
+    return enc_pwd
+
+
+def check_password(pwd: str, enc_pwd: str) -> str:
+    try:
+        return ph.verify(enc_pwd, pwd)
+    except Exception:
+        return False
+
+
+### ROUTES ###
 
 
 @app.route("/api/v1/login", methods=["POST"])
@@ -29,9 +53,11 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
-    # TODO: Obviously you need to replace this with datbase stuff
-    if username != "test" or password != "test":
+    enc_password = db_get_pwd_hash(username)
+    print(password, enc_password)
+    if not check_password(password, enc_password):
         return jsonify({"msg": "Bad username or password"}), 401
+
     access_token = create_access_token(identity=username)
     refresh_token = create_refresh_token(identity=username)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
@@ -42,11 +68,10 @@ def register():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
-    # TODO: Obviously you need to replace this check with real DB check
-    if username == "test":
+    if db_check_user_taken(username):
         return jsonify({"msg": "Username already taken"}), 401
 
-    # TODO: Save user to database here with hashed password
+    db_create_user(username, secure_password(password))
     access_token = create_access_token(identity=username)
     refresh_token = create_refresh_token(identity=username)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
@@ -76,17 +101,16 @@ def test_upload_image():
     Let's user submit an image. This is NOT for production, and is just
     for testing the bluetooth device and seeing if it works.
     """
-    file = request.files['image'].read()
-    upload_folder = 'test_img_folder'
+    file = request.files["image"].read()
+    upload_folder = "test_img_folder"
     filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
 
     os.makedirs(upload_folder, exist_ok=True)
     file_path = os.path.join(upload_folder, filename)
-    with open(file_path, 'wb') as f:
+    with open(file_path, "wb") as f:
         f.write(file)
 
-    return jsonify({"message": "File uploaded successfully", "filename":
-                    filename}), 200
+    return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
 
 
 @app.route("/api/v1/upload_image", methods=["POST"])
@@ -96,10 +120,10 @@ def upload_image():
     TODO: Don't send request number cause this is just gonna bounce back from
           the mini hardware device
     """
-    file = request.files['image'].read()
+    file = request.files["image"].read()
 
     # NOTE: file is in raw byte form, but sould be JPG
-    return jsonify({'message': 'Image sent successfully'}), 200
+    return jsonify({"message": "Image sent successfully"}), 200
 
 
 @app.route("/api/v1/edit_contact", methods=["PATCH"])
