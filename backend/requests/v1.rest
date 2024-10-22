@@ -1,12 +1,12 @@
 
-### Login/register stuff
+### Login/register endpoints
 
 POST http://127.0.0.1:5000/api/v1/login
 Content-Type: application/json
 
 {
-    "username": "test4",
-    "password": "test5"
+    "username": "test6",
+    "password": "test6"
 }
 
 ###
@@ -15,8 +15,8 @@ POST http://127.0.0.1:5000/api/v1/register
 Content-Type: application/json
 
 {
-    "username": "test5",
-    "password": "test5"
+    "username": "test6",
+    "password": "test6"
 }
 
 

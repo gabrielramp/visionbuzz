@@ -35,6 +35,27 @@ def db_check_user_taken(username: str) -> bool:
             return n_rows >= 1
 
 
+def db_get_uid(username: str) -> int:
+    """
+    Returns UID of username
+    """
+    with psycopg.connect("dbname=vision_draft") as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT uid 
+                FROM users
+                WHERE username = %s;
+                """,
+                (username, )
+            )
+
+            res = cur.fetchone()
+            uid = res[0]
+
+            return uid
+
+
 def db_create_user(username: str, pwd: str) -> int:
     """
     Returns UID?
@@ -90,21 +111,19 @@ def db_get_pwd_hash(username: str) -> bool:
 
 
 def db_delete_user(uid: int) -> bool:
-    with psycopg.connect("dbname=test user=postgres") as conn:
+    with psycopg.connect("dbname=vision_draft") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 DELETE FROM users
-                WHERE uid = %s
+                WHERE uid = %s;
                 """,
                 (uid, )
             )
 
-            # cur.execute("SELECT * FROM test")
             cur.fetchone()
             uid = cur[0]
 
-            # Make the changes to the database persistent
             conn.commit()
             return True
 
@@ -114,28 +133,94 @@ def db_add_contact(uid: int) -> int:
     NOTE: The user should not have access to this
           At first, this should make temp user and connect embeddings to it
     """
-    with psycopg.connect("dbname=test user=postgres") as conn:
+    with psycopg.connect("dbname=vision_draft") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO contacts (uid, temp)
-                    DEFAULT VALUES (%s, %s)
+                    DEFAULT VALUES (%s, %s);
                 """,
                 (uid, True, )
             )
 
-            # cur.execute("SELECT * FROM test")
             cur.fetchone()
             cid = cur[0]
 
-            # Make the changes to the database persistent
             conn.commit()
             return cid
 
 
-def db_delete_contact(uid, cid):
-    return
+def db_get_contacts(uid: int):
+    """
+    Returns a list of contacts!
+    """
+    with psycopg.connect("dbname=vision_draft") as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT * FROM contacts
+                WHERE uid = %s;
+                """,
+                (uid, )
+            )
 
+            cur.fetchall()
+            print(cur)
+            cid = cur
+
+            return cid
+
+
+def db_delete_contact(uid: int, cid: int):
+    """
+    Deletes a contact from a user
+    """
+    with psycopg.connect("dbname=vision_draft") as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM contacts
+                WHERE uid = %s AND cid = %s;
+                """,
+                (uid, cid, )
+            )
+
+            cur.fetchall()
+            print(cur)
+            cid = cur
+
+            return True 
+
+    return False
+
+
+def db_update_contact(uid: int, cid: int, update_fields: dict) -> bool:
+    """
+    Given a contact ID and user ID, this updates the fields specified
+    in the request
+    """
+    if not update_fields:
+        return False
+
+    set_fields = ', '.join(f"{key} = %s" for key in update_fields.keys())
+    values = list(update_fields.values()) + [uid, cid]
+    query = f"""
+            UPDATE contacts
+            SET {set_fields}
+            WHERE uid = %s AND cid = %s;
+            """
+
+    with psycopg.connect("dbname=vision_draft") as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, values)
+
+            cur.fetchall()
+            print(cur)
+            cid = cur
+
+            return True 
+
+    return False
 
 """
 PROBLEM: This function way too thicc

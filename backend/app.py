@@ -17,7 +17,15 @@ from flask_jwt_extended import JWTManager
 
 from config import JWT_SECRET_KEY, PASSWORD_PEPPER
 
-from utils.db import db_check_user_taken, db_create_user, db_get_pwd_hash
+from utils.db import (
+    db_check_user_taken,
+    db_create_user,
+    db_get_pwd_hash,
+    db_get_uid,
+    db_get_contacts,
+    db_delete_contact,
+    db_update_contact
+)
 
 app = Flask(__name__)
 
@@ -45,7 +53,7 @@ def check_password(pwd: str, enc_pwd: str) -> str:
         return False
 
 
-### ROUTES ###
+# ROUTES
 
 
 @app.route("/api/v1/login", methods=["POST"])
@@ -54,12 +62,12 @@ def login():
     password = request.json.get("password", None)
 
     enc_password = db_get_pwd_hash(username)
-    print(password, enc_password)
     if not check_password(password, enc_password):
         return jsonify({"msg": "Bad username or password"}), 401
 
-    access_token = create_access_token(identity=username)
-    refresh_token = create_refresh_token(identity=username)
+    uid = db_get_uid(username)
+    access_token = create_access_token(identity=uid)
+    refresh_token = create_refresh_token(identity=uid)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -71,9 +79,9 @@ def register():
     if db_check_user_taken(username):
         return jsonify({"msg": "Username already taken"}), 401
 
-    db_create_user(username, secure_password(password))
-    access_token = create_access_token(identity=username)
-    refresh_token = create_refresh_token(identity=username)
+    uid = db_create_user(username, secure_password(password))
+    access_token = create_access_token(identity=uid)
+    refresh_token = create_refresh_token(identity=uid)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -83,16 +91,6 @@ def refresh():
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity)
     return jsonify(access_token=access_token)
-
-
-@app.route("/api/v1/pull_contacts", methods=["GET"])
-@jwt_required()
-def pull_contacts():
-    # Access the identity of the current user with get_jwt_identity
-    # TODO: Finish this with real database
-    current_user = get_jwt_identity()
-    print(f"Currently logged in as {current_user}")
-    return jsonify(users={"a": "a"}), 200
 
 
 @app.route("/api/v1/test_upload", methods=["POST"])
@@ -114,26 +112,55 @@ def test_upload_image():
 
 
 @app.route("/api/v1/upload_image", methods=["POST"])
+@jwt_required()
 def upload_image():
     """
     Submits an image for the AI people to do their thing
-    TODO: Don't send request number cause this is just gonna bounce back from
-          the mini hardware device
+    NOTE: Whatever gets sent back doesn't matter
     """
     file = request.files["image"].read()
+    # TODO: AI people should insert code here?
 
     # NOTE: file is in raw byte form, but sould be JPG
-    return jsonify({"message": "Image sent successfully"}), 200
+    pass
+
+
+@app.route("/api/v1/pull_contacts", methods=["GET"])
+@jwt_required()
+def pull_contacts():
+    # Access the identity of the current user with get_jwt_identity
+    # TODO: Finish this with real database
+    uid = get_jwt_identity()
+    print(f"Currently logged in as {uid}")
+
+    contacts = db_get_contacts(uid)
+    print(f"Got contacts {contacts}")
+
+    return jsonify(contacts), 200
 
 
 @app.route("/api/v1/edit_contact", methods=["PATCH"])
-def edit_contact():
-    return
+@jwt_required()
+def edit_contact(cid):
+    uid = get_jwt_identity()
+    req_params = request.get_json()
+
+    res = db_update_contact(uid, cid, req_params)
+    
+    if res:
+        return jsonify({"message": "Updated successfully"}), 200
+    return jsonify({"error": "contact not updated successfully"}), 404
 
 
-@app.route("/api/v1/delete_contact", methods=["DELETE"])
-def delete_contact():
-    return
+@app.route("/api/v1/delete_contact/<cid>", methods=["DELETE"])
+@jwt_required()
+def delete_contact(cid):
+    uid = get_jwt_identity()
+    res = db_delete_contact(uid, cid)
+    if res:
+        return jsonify({"message": "Contact deleted successfully"}), 204
+    
+    return jsonify({"error": "Contact not found or could not be deleted"}), 404
 
 
 # TODO: Testing code to run server locally
