@@ -1,5 +1,5 @@
 import psycopg
-
+from config import DB_NAME
 """
 - create a user
 - add contact
@@ -16,7 +16,7 @@ def db_check_user_taken(username: str) -> bool:
     """
     Returns whether a username is taken
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -39,7 +39,7 @@ def db_get_uid(username: str) -> int:
     """
     Returns UID of username
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -60,7 +60,7 @@ def db_create_user(username: str, pwd: str) -> int:
     """
     Returns UID?
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -91,7 +91,7 @@ def db_get_pwd_hash(username: str) -> bool:
     """
     Returns whether login was successful
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -109,9 +109,8 @@ def db_get_pwd_hash(username: str) -> bool:
             return enc_pwd
 
 
-
 def db_delete_user(uid: int) -> bool:
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -133,7 +132,7 @@ def db_add_contact(uid: int) -> int:
     NOTE: The user should not have access to this
           At first, this should make temp user and connect embeddings to it
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -154,7 +153,7 @@ def db_get_contacts(uid: int):
     """
     Returns a list of contacts!
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -175,7 +174,7 @@ def db_delete_contact(uid: int, cid: int):
     """
     Deletes a contact from a user
     """
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -210,7 +209,7 @@ def db_update_contact(uid: int, cid: int, update_fields: dict) -> bool:
             WHERE uid = %s AND cid = %s;
             """
 
-    with psycopg.connect("dbname=vision_draft") as conn:
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(query, values)
 
