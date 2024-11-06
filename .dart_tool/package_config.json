@@ -164,13 +164,13 @@
       "languageVersion": "3.3"
     },
     {
-      "name": "vizionbuzz",
+      "name": "visionbuzz",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2024-11-04T05:30:42.326384Z",
+  "generated": "2024-11-06T20:11:40.521523Z",
   "generator": "pub",
   "generatorVersion": "3.5.4",
   "flutterRoot": "file:///Users/ch224634/proj/flutter",
