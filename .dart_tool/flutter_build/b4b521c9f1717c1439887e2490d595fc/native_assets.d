@@ -1,0 +1,1 @@
+ /Users/ch224634/proj/visionbuzz/.dart_tool/flutter_build/b4b521c9f1717c1439887e2490d595fc/native_assets.yaml: 
