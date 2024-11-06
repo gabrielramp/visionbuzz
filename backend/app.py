@@ -99,14 +99,14 @@ def test_upload_image():
     Let's user submit an image. This is NOT for production, and is just
     for testing the bluetooth device and seeing if it works.
     """
-    file = request.files["image"].read()
+    img_data = request.data
     upload_folder = "test_img_folder"
     filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
 
     os.makedirs(upload_folder, exist_ok=True)
     file_path = os.path.join(upload_folder, filename)
     with open(file_path, "wb") as f:
-        f.write(file)
+        f.write(img_data)
 
     return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
 
@@ -163,4 +163,10 @@ def delete_contact(cid):
     return jsonify({"error": "Contact not found or could not be deleted"}), 404
 
 
-# TODO: Testing code to run server locally
+# # Testing code to run server locally
+@app.route("/")
+def hello():
+    return "<h1 style='color:blue'>Visionbuzz!</h1>"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
