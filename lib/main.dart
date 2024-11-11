@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'contacts.dart' as contactsWidget;
+import 'upload.dart' as uploadWidget;
+import 'device.dart' as deviceWidget;
+import 'settings.dart' as settingsWidget;
 
 void main() {
   runApp(const MyApp());
@@ -13,13 +17,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        '/home': (context) => MyApp(),
+        '/contacts': (context) => contactsWidget.ContactsPage(),
+        '/upload': (context) => uploadWidget.UploadPage(),
+        '/device': (context) => deviceWidget.DevicePage(),
+        '/settings': (context) => settingsWidget.SettingsPage()
+      },
       title: 'Flutter Demo',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
             primary: const Color(0xff4f009e),
             secondary: const Color(0xffffffff),
-            surface: const Color(0xff00000),
+            // surface: const Color(0xff00000),
             seedColor: Colors.red),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -57,6 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+  }
+
+  goToPage(String route) {
+    return Navigator.pushNamed(context, route);
   }
 
   @override
@@ -111,11 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            backgroundColor: Theme.of(context).colorScheme.surface,
             icon: Icon(Icons.business),
             label: 'Business',
           ),
@@ -123,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
             backgroundColor: Theme.of(context).colorScheme.surface,
             icon: Icon(Icons.school),
             label: 'School',
-          ),
+          )
         ],
         currentIndex: 0,
         selectedItemColor: Colors.amber[800],
@@ -138,43 +149,52 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
+            // Upload Button
             FloatingActionButton(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               shape: CircleBorder(),
-              onPressed: _incrementCounter,
+              onPressed: () => goToPage('/upload'),
               heroTag: null,
               child: Icon(Icons.upload, size: iconSize),
             ),
+
+            // Contacts Button
             FloatingActionButton(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               shape: CircleBorder(),
-              onPressed: _incrementCounter,
+              onPressed: () => goToPage('/contacts'),
               heroTag: null,
               child: Icon(Icons.person, size: iconSize),
             ),
+
+            // Home Button
             FloatingActionButton(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               shape: CircleBorder(),
-              onPressed: _incrementCounter,
+              onPressed: () => goToPage('/home'),
               heroTag: null,
               child: Icon(Icons.home_filled, size: iconSize),
             ),
+
+            // Device Button
             FloatingActionButton(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               shape: CircleBorder(),
-              onPressed: _incrementCounter,
+              onPressed: () => goToPage('/device'),
               heroTag: null,
               child: Icon(Icons.linked_camera, size: iconSize),
             ),
+
+            // Settings Button
             FloatingActionButton(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               shape: CircleBorder(),
-              onPressed: _incrementCounter,
+              onPressed: () => goToPage('/settings'),
               heroTag: null,
               child: Icon(Icons.settings, size: iconSize),
             ),
