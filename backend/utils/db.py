@@ -131,6 +131,7 @@ def db_add_contact(uid: int) -> int:
     """
     NOTE: The user should not have access to this
           At first, this should make temp user and connect embeddings to it
+    TODO: This should also insert into the timeline and last seen category
     """
     with psycopg.connect(f"dbname={DB_NAME}") as conn:
         with conn.cursor() as cur:
@@ -228,6 +229,38 @@ SOLUTION:
     - name, vib_pattern, temp should all be front-end
 """
 
-
+# TODO: Change this sometime
 def db_change_embedding(uid: int, cid: int):
+    return
+
+
+# Create DB thing to pull timeline of events for an individual
+# TODO: Double check this works
+def db_pull_contact_timeline(cid: int):
+    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT seen_at
+                FROM contact_timeline
+                WHERE cid = %s
+                ORDER BY seen_at DESC;
+                """,
+                (cid, )
+            )
+
+            cur.fetchall()
+            print(cur)
+            timeline = cur
+
+            return timeline
+    return None
+
+
+# TODO: Update a user's timeline
+def db_update_contact_timeline(cid: int, time: int):
+    return
+
+
+def db_remove_all_temp_contacts(uid: int):
     return

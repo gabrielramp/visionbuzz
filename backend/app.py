@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import io
 import os
 
 from datetime import datetime, timedelta
@@ -15,7 +16,7 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
-from config import JWT_SECRET_KEY, PASSWORD_PEPPER
+from config import JWT_SECRET_KEY
 
 from utils.db import (
     db_check_user_taken,
@@ -29,7 +30,7 @@ from utils.db import (
 
 app = Flask(__name__)
 
-### FLASK SETUP ###
+# FLASK SETUP
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
@@ -38,9 +39,7 @@ jwt = JWTManager(app)
 ph = PasswordHasher()
 
 
-### HELPER FUNCTIONS ###
-
-
+# HELPER FUNCTIONS
 def secure_password(pwd: str) -> str:
     enc_pwd = ph.hash(pwd)
     return enc_pwd
@@ -54,8 +53,6 @@ def check_password(pwd: str, enc_pwd: str) -> str:
 
 
 # ROUTES
-
-
 @app.route("/api/v1/login", methods=["POST"])
 def login():
     username = request.json.get("username", None)
@@ -116,20 +113,24 @@ def test_upload_image():
 def upload_image():
     """
     Submits an image for the AI people to do their thing
-    NOTE: Whatever gets sent back doesn't matter
+    NOTE: Whatever gets sent back doesn't matter since ESP32 isn't taking
     """
-    file = request.files["image"].read()
+    # NOTE: Use binary stream to send directly to AI
+    img_data = io.BytesIO(request.data)
     # TODO: AI people should insert code here?
+    # TODO: They need to be able to handle this somehow
+    # TODO: Check when we last identified someone
+    #       If not recently, use firebase to send a notif to the phone
+    #       Use the timeline table and see if last identified very recently
+    # TODO: How do we pull out a representative face?
+    # TODO: Update thing so that we also update the timeline
 
-    # NOTE: file is in raw byte form, but sould be JPG
     pass
 
 
 @app.route("/api/v1/pull_contacts", methods=["GET"])
 @jwt_required()
 def pull_contacts():
-    # Access the identity of the current user with get_jwt_identity
-    # TODO: Finish this with real database
     uid = get_jwt_identity()
     print(f"Currently logged in as {uid}")
 
