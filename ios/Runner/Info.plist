@@ -54,5 +54,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>The app requests When in Use or Always authorization.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>The app requests Always authorization.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>(macOS only) Your macOS app uses location services.</string>
 </dict>
 </plist>
