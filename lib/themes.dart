@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 
 class Themes {
   static Color _mainColor = new Color(0xff4f009e);
@@ -10,6 +11,7 @@ class Themes {
       color: _mainColor,
     )),
     textTheme: TextTheme(
+      titleMedium: TextStyle(fontSize: 60, fontStyle: FontStyle.italic),
       headlineMedium: TextStyle(
           fontSize: 35, fontWeight: FontWeight.w700, color: _mainColor),
       headlineSmall: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
@@ -22,4 +24,8 @@ class Themes {
   );
 
   static List<ThemeData> _appThemes = [main];
+
+  List<ThemeData> getAppThemes(){
+    return _appThemes;
+  }
 }

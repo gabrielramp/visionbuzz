@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: themes.Themes.main,
       home: DefaultTabController(
+        initialIndex: 3,
         length: 5,
         child: const MyHomePage(title: 'VisionBuzz'),
       ),
