@@ -1,5 +1,3 @@
-import hashlib
-import hmac
 import io
 import os
 import pickle
@@ -18,16 +16,8 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
-from utils.db import (
-    db_check_user_taken,
-    db_create_user,
-    db_get_pwd_hash,
-    db_get_uid,
-    db_get_contacts,
-    db_delete_contact,
-    db_update_contact,
-)
-from utils.password_utils import PasswordManager
+from services.password_service import PasswordServive
+from services.db_service import DatabaseService
 
 
 app = Flask(__name__)
@@ -37,7 +27,8 @@ config = get_config()
 app.config.from_object(config)
 jwt = JWTManager(app)
 
-password_manager = PasswordManager()
+password_service = PasswordServive()
+database_service = DatabaseService(config)
 
 # TODO: MOVE THIS ALL OUT OF HERE
 detector = dlib.get_frontal_face_detector()
@@ -107,11 +98,11 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
-    enc_password = db_get_pwd_hash(username)
-    if not password_manager.verify_password(password, enc_password):
+    enc_password = database_service.get_pwd_hash(username)
+    if not password_service.verify_password(password, enc_password):
         return jsonify({"msg": "Bad username or password"}), 401
 
-    uid = db_get_uid(username)
+    uid = database_service.get_uid(username)
     access_token = create_access_token(identity=uid)
     refresh_token = create_refresh_token(identity=uid)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
@@ -122,10 +113,12 @@ def register():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
-    if db_check_user_taken(username):
+    if database_service.check_user_taken(username):
         return jsonify({"msg": "Username already taken"}), 401
 
-    uid = db_create_user(username, password_manager.hash_password(password))
+    uid = database_service.create_user(
+        username, password_service.hash_password(password)
+    )
     access_token = create_access_token(identity=uid)
     refresh_token = create_refresh_token(identity=uid)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
@@ -238,7 +231,7 @@ def pull_contacts():
     uid = get_jwt_identity()
     print(f"Currently logged in as {uid}")
 
-    contacts = db_get_contacts(uid)
+    contacts = database_service.get_contacts(uid)
     print(f"Got contacts {contacts}")
 
     return jsonify(contacts), 200
@@ -250,7 +243,7 @@ def edit_contact():
     uid = get_jwt_identity()
     req_params = request.get_json()
 
-    res = db_update_contact(uid, req_params)
+    res = database_service.update_contact(uid, req_params)
     if res:
         return jsonify({"message": "Updated successfully"}), 200
     return jsonify({"error": "Contact not updated successfully"}), 404
@@ -260,7 +253,7 @@ def edit_contact():
 @jwt_required()
 def delete_contact(cid):
     uid = get_jwt_identity()
-    res = db_delete_contact(uid, cid)
+    res = database_service.delete_contact(uid, cid)
     if res:
         return jsonify({"message": "Contact deleted successfully"}), 200
 
