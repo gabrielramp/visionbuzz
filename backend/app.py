@@ -16,8 +16,9 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
-from services.password_service import PasswordServive
 from services.db_service import DatabaseService
+from services.face_service import FaceService
+from services.password_service import PasswordServive
 
 
 app = Flask(__name__)
@@ -27,69 +28,9 @@ config = get_config()
 app.config.from_object(config)
 jwt = JWTManager(app)
 
-password_service = PasswordServive()
 database_service = DatabaseService(config)
-
-# TODO: MOVE THIS ALL OUT OF HERE
-detector = dlib.get_frontal_face_detector()
-sp = dlib.shape_predictor(config.SHAPE_PREDICTOR_PATH)
-facerec = dlib.face_recognition_model_v1(config.FACE_REC_MODEL_PATH)
-
-# Data directory and file
-data_path = "facialdata"
-if not os.path.exists(data_path):
-    os.makedirs(data_path)
-data_file = os.path.join(data_path, "face_encodings.pkl")
-
-# Load known faces per user
-if os.path.isfile(data_file):
-    with open(data_file, "rb") as f:
-        user_face_data = pickle.load(f)
-else:
-    user_face_data = {}
-
-
-# Helper functions for face data
-def save_faces():
-    with open(data_file, "wb") as f:
-        pickle.dump(user_face_data, f)
-
-
-def get_user_face_data(user_id):
-    if user_id not in user_face_data:
-        user_face_data[user_id] = ([], [])
-    return user_face_data[user_id]
-
-
-def set_user_face_data(user_id, encodings, names):
-    user_face_data[user_id] = (encodings, names)
-    save_faces()
-
-
-def recognize_faces_per_user(rgb_frame, known_face_encodings, known_face_names):
-    labels = []
-    faces = detector(rgb_frame, 0)
-    for face in faces:
-        shape = sp(rgb_frame, face)
-        face_descriptor = facerec.compute_face_descriptor(rgb_frame, shape)
-        current_face_encoding = np.array(face_descriptor)
-
-        # Attempt to match face with known faces
-        # TODO: Is this really the best way to match embeddings?
-        # TODO: Where does 0.6 come from?
-        if known_face_encodings:
-            distances = np.linalg.norm(
-                known_face_encodings - current_face_encoding, axis=1
-            )
-            min_distance = np.min(distances)
-            if min_distance < 0.6:
-                index = np.argmin(distances)
-                labels.append(known_face_names[index])
-            else:
-                labels.append("Unknown")
-        else:
-            labels.append("Unknown")
-    return labels
+face_service = FaceService(config)
+password_service = PasswordServive()
 
 
 # ROUTES
@@ -150,6 +91,8 @@ def test_upload_image():
     return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
 
 
+# TODO: Should move almost all this logic into face_service
+# TODO: Should fully take the image and do all the things (IVY: taking a break, work for later)
 @app.route("/api/v1/upload_image", methods=["POST"])
 @jwt_required()
 def upload_image():
@@ -157,12 +100,11 @@ def upload_image():
     Submits an image for the AI people to do their thing
     NOTE: Whatever gets sent back doesn't matter since ESP32 isn't taking
     """
-    # TODO: Use arbitrary user
-    # user_id = "test_user_id"
     user_id = get_jwt_identity()
+    # user_id = "test_user_id"
+
     # TODO: WE SHOULD USE STREAM FOR LESS OVERHEAD & MAKE IT EASIER
     img_data = io.BytesIO(request.data)
-    known_face_encodings, known_face_names = get_user_face_data(user_id)
 
     if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
@@ -180,48 +122,26 @@ def upload_image():
         img = img.convert("RGB")
 
     np_image = np.array(img)
-
     frame = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+    known_face_encodings, known_face_names = face_service.get_user_face_data(user_id)
     name = request.form.get("name", "")
 
     if name:
-        # The client wants to save this face with the given name
-        faces = detector(rgb_frame, 0)
-        if len(faces) == 0:
-            return jsonify({"error": "No face detected in the image"}), 400
-        elif len(faces) > 1:
-            return (
-                jsonify(
-                    {
-                        "error": "Multiple faces detected. Please upload an image with a single face"
-                    }
-                ),
-                400,
-            )
+        face_encoding, error = face_service.detect_and_encode_face(rgb_frame)
+        if error:
+            return jsonify({"error": error}), 400
 
-        # TODO: Check when this person was last seen
-        # TODO: There is no naming functionality
-        # TODO:
-        face = faces[0]
-        shape = sp(rgb_frame, face)
-        face_descriptor = facerec.compute_face_descriptor(rgb_frame, shape)
-        current_face_encoding = np.array(face_descriptor)
-        known_face_encodings.append(current_face_encoding)
+        known_face_encodings.append(face_encoding)
         known_face_names.append(name)
-        set_user_face_data(user_id, known_face_encodings, known_face_names)
-        response = f"Face encoding for {name} saved."
-        return jsonify({"message": response}), 200
-
+        face_service.set_user_face_data(user_id, known_face_encodings, known_face_names)
+        return jsonify({"message": f"Face encoding for {name} saved."}), 200
     else:
-        labels = recognize_faces_per_user(
+        labels = face_service.recognize_faces_per_user(
             rgb_frame, known_face_encodings, known_face_names
         )
-        if labels:
-            response = ", ".join(labels)
-        else:
-            response = "No faces detected."
+        response = ", ".join(labels) if labels else "No faces detected."
         return jsonify({"message": response}), 200
 
 
