@@ -1,5 +1,6 @@
 import psycopg
-from config import DB_NAME
+from settings import get_config
+
 """
 - create a user
 - add contact
@@ -9,6 +10,7 @@ from config import DB_NAME
 - TODO: Figure out if we need something to do w/ embeddings
 - TODO: store embeddings (WILL NEED UID AND CID)
 - TODO: Change the connect from test db
+- TODO: Find cleaner way to do this from config
 """
 
 
@@ -16,7 +18,7 @@ def db_check_user_taken(username: str) -> bool:
     """
     Returns whether a username is taken
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -24,7 +26,7 @@ def db_check_user_taken(username: str) -> bool:
                 FROM users
                 WHERE username = %s;
                 """,
-                (username, )
+                (username,),
             )
 
             # cur.execute("SELECT * FROM test")
@@ -39,7 +41,7 @@ def db_get_uid(username: str) -> int:
     """
     Returns UID of username
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -47,7 +49,7 @@ def db_get_uid(username: str) -> int:
                 FROM users
                 WHERE username = %s;
                 """,
-                (username, )
+                (username,),
             )
 
             res = cur.fetchone()
@@ -60,14 +62,17 @@ def db_create_user(username: str, pwd: str) -> int:
     """
     Returns UID?
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO users (username, pwd)
                     VALUES (%s, %s);
                 """,
-                (username, pwd, )
+                (
+                    username,
+                    pwd,
+                ),
             )
 
             cur.execute(
@@ -76,7 +81,7 @@ def db_create_user(username: str, pwd: str) -> int:
                 FROM users
                 WHERE username = %s;
                 """,
-                (username, )
+                (username,),
             )
 
             res = cur.fetchone()
@@ -91,7 +96,7 @@ def db_get_pwd_hash(username: str) -> bool:
     """
     Returns whether login was successful
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -99,7 +104,7 @@ def db_get_pwd_hash(username: str) -> bool:
                 FROM users
                 WHERE username = %s;
                 """,
-                (username, )
+                (username,),
             )
 
             res = cur.fetchone()
@@ -110,14 +115,14 @@ def db_get_pwd_hash(username: str) -> bool:
 
 
 def db_delete_user(uid: int) -> bool:
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 DELETE FROM users
                 WHERE uid = %s;
                 """,
-                (uid, )
+                (uid,),
             )
 
             cur.fetchone()
@@ -133,14 +138,17 @@ def db_add_contact(uid: int) -> int:
           At first, this should make temp user and connect embeddings to it
     TODO: This should also insert into the timeline and last seen category
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO contacts (uid, temp)
                     DEFAULT VALUES (%s, %s);
                 """,
-                (uid, True, )
+                (
+                    uid,
+                    True,
+                ),
             )
 
             cur.fetchone()
@@ -154,14 +162,14 @@ def db_get_contacts(uid: int):
     """
     Returns a list of contacts!
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 SELECT * FROM contacts
                 WHERE uid = %s;
                 """,
-                (uid, )
+                (uid,),
             )
 
             cur.fetchall()
@@ -175,21 +183,24 @@ def db_delete_contact(uid: int, cid: int):
     """
     Deletes a contact from a user
     """
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 DELETE FROM contacts
                 WHERE uid = %s AND cid = %s;
                 """,
-                (uid, cid, )
+                (
+                    uid,
+                    cid,
+                ),
             )
 
             cur.fetchall()
             print(cur)
             cid = cur
 
-            return True 
+            return True
 
     return False
 
@@ -202,7 +213,7 @@ def db_update_contact(uid: int, cid: int, update_fields: dict) -> bool:
     if not update_fields:
         return False
 
-    set_fields = ', '.join(f"{key} = %s" for key in update_fields.keys())
+    set_fields = ", ".join(f"{key} = %s" for key in update_fields.keys())
     values = list(update_fields.values()) + [uid, cid]
     query = f"""
             UPDATE contacts
@@ -210,7 +221,7 @@ def db_update_contact(uid: int, cid: int, update_fields: dict) -> bool:
             WHERE uid = %s AND cid = %s;
             """
 
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(query, values)
 
@@ -218,9 +229,10 @@ def db_update_contact(uid: int, cid: int, update_fields: dict) -> bool:
             print(cur)
             cid = cur
 
-            return True 
+            return True
 
     return False
+
 
 """
 PROBLEM: This function way too thicc
@@ -228,6 +240,7 @@ SOLUTION:
     - last_seen is only accessed by backend and should be its own thing
     - name, vib_pattern, temp should all be front-end
 """
+
 
 # TODO: Change this sometime
 def db_change_embedding(uid: int, cid: int):
@@ -237,7 +250,7 @@ def db_change_embedding(uid: int, cid: int):
 # Create DB thing to pull timeline of events for an individual
 # TODO: Double check this works
 def db_pull_contact_timeline(cid: int):
-    with psycopg.connect(f"dbname={DB_NAME}") as conn:
+    with psycopg.connect(f"dbname={get_config().DB_NAME}") as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -246,7 +259,7 @@ def db_pull_contact_timeline(cid: int):
                 WHERE cid = %s
                 ORDER BY seen_at DESC;
                 """,
-                (cid, )
+                (cid,),
             )
 
             cur.fetchall()
