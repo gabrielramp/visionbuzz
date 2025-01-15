@@ -19,6 +19,7 @@ from flask_jwt_extended import (
 from services.db_service import DatabaseService
 from services.face_service import FaceService
 from services.password_service import PasswordServive
+from firebase_admin import messaging
 
 
 app = Flask(__name__)
@@ -155,6 +156,21 @@ def pull_contacts():
     print(f"Got contacts {contacts}")
 
     return jsonify(contacts), 200
+
+# TIM'S WORKSHOP
+@app.route("/api/v1/test_notify", methods=["GET"])
+def test_notify():
+    msg = messaging.Message(
+    notification=messaging.Notification(
+        title='Test Notification',
+        body= 'You have successfully pinged the server!'
+    ),
+        token = '<device_token>'
+    )
+    response = messaging.send(msg)
+    print('Successfully sent msg:', response)
+
+# END OF TIM'S WORKSHOP
 
 
 @app.route("/api/v1/edit_contact", methods=["PATCH"])
