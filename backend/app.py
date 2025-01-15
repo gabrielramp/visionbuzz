@@ -170,6 +170,18 @@ def test_notify():
     response = messaging.send(msg)
     print('Successfully sent msg:', response)
 
+# Not sure which is more technically correct... Ivy?
+@app.route("/api/v1/test_notify_v2", methods=["GET"])
+def test_notify_v2():
+    message = messaging.Message(
+        data={
+            'status': '1',
+        },
+        token='registration_token',
+    )
+    response = messaging.send(message)
+    print('Succesffuly sent message:', response)
+    
 # END OF TIM'S WORKSHOP
 
 
