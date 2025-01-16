@@ -70,7 +70,7 @@ class FaceService:
 
         return labels
 
-    # WORMY/JOSE TODO: Why is this only for one face?
+    # Why is this only for one face?: Since this is adding a name
     # WORMY/JOSE TODO: Can we make this a queue or something to avoid overloading the server?
     # WORMY/JOSE TODO: Can we generalize and embed multiple faces at once?
     def detect_and_encode_face(self, rgb_frame):
@@ -87,3 +87,10 @@ class FaceService:
         shape = self.sp(rgb_frame, face)
         face_descriptor = self.facerec.compute_face_descriptor(rgb_frame, shape)
         return np.array(face_descriptor), None
+
+    # JOSE TODO:
+    def get_face_embeds(self, rgb_frame):
+        """
+        From frame, return list of embeddings of faces
+        """
+        pass
