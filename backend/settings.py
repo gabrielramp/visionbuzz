@@ -21,6 +21,14 @@ class Config:
     NOTIF_COOLDOWN = timedelta(minutes=1)
     TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
 
+    # DBSCAN HYPERPARAMETESR
+    # JOSE TODO: YOUC AN CHANGE THESE IF YOU WANT
+    CLUSTER_RADIUS = 0.3
+    CLUSTER_POINTS = 3
+
+    # JOSE TODO: Figure out to tune with how often we're taking images
+    MINIMUM_CLUSTER_SIZE = 10
+
     # Database Settings
     DB_NAME = os.getenv("DB_NAME", "vision_draft")
 
