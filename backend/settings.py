@@ -16,6 +16,11 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
+    # TODO: Implement
+    # TODO: In the future, maybe let user set
+    NOTIF_COOLDOWN = timedelta(minutes=1)
+    TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
+
     # Database Settings
     DB_NAME = os.getenv("DB_NAME", "vision_draft")
 
