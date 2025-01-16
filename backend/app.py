@@ -74,6 +74,7 @@ def refresh():
     return jsonify(access_token=access_token)
 
 
+# TODO: THIS DOESN"T WORK THE IMAGES ARE WONK FIX THIS PLEASSE IVY
 @app.route("/api/v1/test_upload", methods=["POST"])
 def test_upload_image():
     """
@@ -241,6 +242,9 @@ def pull_timeline():
 
     # TODO: hadnwayvd magic to get nice return format
     res = None
+    # IVY NOTE: USE A GROUP BY WITH MINIMIM SIZE REQUIREMENT AND THEN JUST AUTOMATICALLY ASSIGN IT TO BE ID TO LAST SEEN TIMES
+    # IVY NOTE: Pull all groups, filter by group size, return id: [timestamps]
+    # IVY NOTE: IGNORE -1
     res = database_service.pull_clusters(user_id)
     return res
 

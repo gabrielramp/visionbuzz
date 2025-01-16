@@ -1,36 +1,29 @@
 CREATE EXTENSION vector;
 
 -- TODO: Add email
--- TODO: Need something to store the 
+-- TIM TODO: Make sure firebase_token is correct type
 CREATE TABLE users (
-    uid         serial PRIMARY KEY,
-    username    varchar NOT NULL,
-    pwd         varchar NOT NULL
+    uid            serial PRIMARY KEY,
+    username       varchar NOT NULL,
+    pwd            varchar NOT NULL
+    firebase_token varchar NOT NULL,
 );
 
--- TODO: Might have to change from last_seen to somehow have feed?????
+-- JOSE TODO: EMBEDDING SIZE MIGHT BE DIFFERENT
 CREATE TABLE contacts (
-    cid             serial PRIMARY KEY,
-    uid             integer REFERENCES users(uid),        -- TODO: Check foreign keys
-    name            varchar,
-    vib_pattern     integer,           -- TODO: design how this works!
-    temp            boolean NOT NULL,
-    button_pressed  boolean NOT NULL
+    cid         serial PRIMARY KEY,
+    uid         integer REFERENCES users(uid),        -- TODO: Check foreign keys
+    name        varchar NOT NULL,
+    vib_pattern integer,           -- TODO: design how this works!
+    embedding   vector(128) NOT NULL, 
+    last_seen   timestamptz NOT NULL,
 );
 
--- TODO: Figure out if this is a good idea
-CREATE TABLE contact_timeline (
-    tid           serial PRIMARY KEY,
-    cid           integer REFERENCES contacts(cid) ON DELETE CASCADE,
-    seen_at       timestamptz NOT NULL,
-    FOREIGN KEY (cid) REFERENCES contacts(cid) ON DELETE CASCADE
-);
-
-/* TODO: Change this depending on how they finally end up implementing the 
-         embeddings*/
-CREATE TABLE embeddings (
-    cid integer REFERENCES contacts(cid),
-    uid integer REFERENCES users(uid),
-    embedding int[][],                  -- TODO: We haven't figured out how to store embeddings
-    PRIMARY KEY (cid, uid)
+-- NOTE: Maybe add back button and something to support images later
+CREATE TABLE loose_embeddings (
+    uid         integer REFERENCES users(uid),
+    embedding   vector(128) NOT NULL,
+    seen_at     timestamptz NOT NULL,
+    cluster_label integer DEFAULT -1
 )
+
