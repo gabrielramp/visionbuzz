@@ -2,9 +2,10 @@ import os
 import pickle
 import numpy as np
 import dlib
-import cv2
 
 
+# TODO: REWRITE THIS SO THIS JUST EMBEDS AND ALSO FOR IT TO USE THE DATABASE
+# JOSE TODO: Go through and check this code and modify as you see fit
 class FaceService:
     def __init__(self, config):
         self.detector = dlib.get_frontal_face_detector()
@@ -69,6 +70,9 @@ class FaceService:
 
         return labels
 
+    # WORMY/JOSE TODO: Why is this only for one face?
+    # WORMY/JOSE TODO: Can we make this a queue or something to avoid overloading the server?
+    # WORMY/JOSE TODO: Can we generalize and embed multiple faces at once?
     def detect_and_encode_face(self, rgb_frame):
         faces = self.detector(rgb_frame, 0)
         if len(faces) == 0:
