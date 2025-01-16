@@ -1,11 +1,9 @@
 import io
 import os
-import pickle
 from datetime import datetime, timedelta
 from PIL import Image
 
 import cv2
-import dlib
 import numpy as np
 from settings import get_config
 from flask import Flask, jsonify, request
@@ -16,11 +14,11 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from services.cluster_service import ClusterService
 from services.db_service import DatabaseService
 from services.face_service import FaceService
 from services.password_service import PasswordServive
 from firebase_admin import messaging
-
 
 app = Flask(__name__)
 
@@ -29,6 +27,7 @@ config = get_config()
 app.config.from_object(config)
 jwt = JWTManager(app)
 
+cluster_service = ClusterService(config)
 database_service = DatabaseService(config)
 face_service = FaceService(config)
 password_service = PasswordServive()
@@ -66,6 +65,7 @@ def register():
     return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 
+# TODO: Rename to refresh JWT token or something
 @app.route("/api/v1/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
@@ -100,6 +100,15 @@ def upload_image():
     """
     Submits an image for the AI people to do their thing
     NOTE: Whatever gets sent back doesn't matter since ESP32 isn't taking
+
+    TODO: NEW FLOW
+
+    1. Get all face embeddings
+    2. Check against contacts & make see if any are known
+        2.1 Notify any that aren't on cooldown
+        2.2 Update last_seen time for all contacts
+    3. For all unknown, add to the temp_embed table
+    NOTE: DONT NEED CLUSTERSERVICE HERE JUST ADD IT TO THE DABATABTE
     """
     user_id = get_jwt_identity()
     # user_id = "test_user_id"
@@ -157,32 +166,83 @@ def pull_contacts():
 
     return jsonify(contacts), 200
 
+
 # TIM'S WORKSHOP
 @app.route("/api/v1/test_notify", methods=["GET"])
 def test_notify():
     msg = messaging.Message(
-    notification=messaging.Notification(
-        title='Test Notification',
-        body= 'You have successfully pinged the server!'
-    ),
-        token = '<device_token>'
+        notification=messaging.Notification(
+            title="Test Notification", body="You have successfully pinged the server!"
+        ),
+        token="<device_token>",
     )
     response = messaging.send(msg)
-    print('Successfully sent msg:', response)
+    print("Successfully sent msg:", response)
+
 
 # Not sure which is more technically correct... Ivy?
 @app.route("/api/v1/test_notify_v2", methods=["GET"])
 def test_notify_v2():
     message = messaging.Message(
         data={
-            'status': '1',
+            "status": "1",
         },
-        token='registration_token',
+        token="registration_token",
     )
     response = messaging.send(message)
-    print('Succesffuly sent message:', response)
-    
+    print("Succesffuly sent message:", response)
+
+
 # END OF TIM'S WORKSHOP
+
+
+# TODO: Maybe change name
+@app.route("/api/v1/create_contact", methods=["POST"])
+@jwt_required()
+def create_contact():
+    """
+    1. Get the cluster ID
+    2. Pull all embeds with ID
+    3. Average them
+    4. Store in contact with name (this should also be passed)
+    5. Remove embeds from the temp table
+    """
+    user_id = get_jwt_identity()
+    cluster_id = None  # TODO
+    contact_name = None  # TODO, get from request
+    cluster_embeds = database_service.pull_single_cluster(user_id, cluster_id)
+    avg_embed = None  # TODO
+    res = database_service.remove_single_cluster(user_id, cluster_id)
+    # TODO: Store new contact with name
+    # TODO: fail if db failed
+    # TODO: Return success
+
+
+@app.route("/api/v1/pull_timeline", methods=["GET"])
+@jwt_required()
+def pull_timeline():
+    """
+    1. Clean up temps (anything older than some config value)
+    2. Go through temp embeds for user & run DBSCAN on vectors
+    3. Store cluster IDs for each embed
+    4. Return valid clusters to user
+
+    returns: {
+        {
+            id1: [TIMESTAMPS],
+            id2: [TIMESTAMPS],
+        {
+    }
+    """
+    user_id = get_jwt_identity()
+    temp_embeds = database_service.pull_temp_embeds(user_id)
+    cluster_ids = cluster_service.get_clusters(temp_embeds)
+    database_service.save_cluster_ids(user_id, cluster_ids)
+
+    # TODO: hadnwayvd magic to get nice return format
+    res = None
+    res = database_service.pull_clusters(user_id)
+    return res
 
 
 @app.route("/api/v1/edit_contact", methods=["PATCH"])
