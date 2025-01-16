@@ -1,4 +1,7 @@
+CREATE EXTENSION vector;
+
 -- TODO: Add email
+-- TODO: Need something to store the 
 CREATE TABLE users (
     uid         serial PRIMARY KEY,
     username    varchar NOT NULL,
