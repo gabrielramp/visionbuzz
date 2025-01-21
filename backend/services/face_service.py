@@ -1,11 +1,12 @@
 import numpy as np
 import dlib
 
+
 class FaceService:
     def __init__(self, config):
         self.detector = dlib.get_frontal_face_detector()
-        self.sp = dlib.shape_predictor("../" + config.SHAPE_PREDICTOR_PATH)
-        self.facerec = dlib.face_recognition_model_v1("../" + config.FACE_REC_MODEL_PATH)
+        self.sp = dlib.shape_predictor(config.SHAPE_PREDICTOR_PATH)
+        self.facerec = dlib.face_recognition_model_v1(config.FACE_REC_MODEL_PATH)
 
     # TODO: This only works well for frontal face views. Replace with multi-view alignment approach
     def get_aligned_faces(self, rgb_frame, face_shapes):
@@ -19,7 +20,7 @@ class FaceService:
         """
         Detects faces in frame, returns cropped re-aligned images of faces
         """
-        face_shapes = self.detector(rgb_frame, 0) 
+        face_shapes = self.detector(rgb_frame, 0)
         return self.get_aligned_faces(rgb_frame, face_shapes)
 
     # TODO: Should we make this a queue or something to avoid overloading the server?
@@ -36,4 +37,3 @@ class FaceService:
             embedding_list.append(np.array(embedding))
 
         return embedding_list
-

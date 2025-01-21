@@ -31,6 +31,7 @@ class Config:
 
     # Database Settings
     DB_NAME = os.getenv("DB_NAME", "vision_draft")
+    SCHEMA_PATH = os.getenv("SCHEMA_PATH", "db.sql")
 
     # Face Recognition Settings
     SHAPE_PREDICTOR_PATH = os.getenv(
@@ -53,8 +54,8 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration."""
 
-    pass
-    # NOTE: Production might use different paths for face recognition models
+    DB_NAME = os.getenv("DB_NAME", "vision_db")
+    # NOTE TODO: Production might use different paths for face recognition models
 
 
 def get_config():

@@ -74,7 +74,6 @@ def refresh():
     return jsonify(access_token=access_token)
 
 
-# TODO: THIS DOESN"T WORK THE IMAGES ARE WONK FIX THIS PLEASSE IVY
 @app.route("/api/v1/test_upload", methods=["POST"])
 def test_upload_image():
     """
@@ -95,6 +94,7 @@ def test_upload_image():
 
 # TODO: Should move almost all this logic into face_service
 # TODO: Should fully take the image and do all the things (IVY: taking a break, work for later)
+# TODO: THIS FUNCTION ALSO DOESNT WORK FULLY YET
 @app.route("/api/v1/upload_image", methods=["POST"])
 @jwt_required()
 def upload_image():
@@ -103,6 +103,7 @@ def upload_image():
     NOTE: Whatever gets sent back doesn't matter since ESP32 isn't taking
 
     TODO: NEW FLOW
+    TODO: This also needs to send notifs if long enough time has elapsed
 
     1. Get all face embeddings
     2. Check against contacts & make see if any are known
@@ -114,46 +115,32 @@ def upload_image():
     user_id = get_jwt_identity()
     # user_id = "test_user_id"
 
-    # TODO: WE SHOULD USE STREAM FOR LESS OVERHEAD & MAKE IT EASIER
+    # We should use stream for less overhead & make it easier
     img_data = io.BytesIO(request.data)
 
-    if "image" not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
-
-    file = request.files["image"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
-
     try:
-        img = Image.open(file.stream)
+        img = Image.open(img_data)
     except Exception as e:
-        return jsonify({"error": "Invalid image file"}), 400
+        return jsonify({"error": "Invalid image stream"}), 400
 
-    if img.mode != "RGB":
-        img = img.convert("RGB")
+    img = img.convert("RGB")
+    frame = np.array(img)
 
-    np_image = np.array(img)
-    frame = cv2.cvtColor(np_image, cv2.COLOR_RGB2BGR)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_embeds = face_service.get_face_embeds(frame)
 
-    known_face_encodings, known_face_names = face_service.get_user_face_data(user_id)
-    name = request.form.get("name", "")
+    for embed in face_embeds:
+        # Check against all contacts
+        closest_match = database_service.pull_closest_contact(user_id, embed.tolist())
+        if not closest_match:
+            # For all unknown, add to loose embeds
+            database_service.add_loose_embedding(user_id, embed.tolist())
+            continue
 
-    if name:
-        face_encoding, error = face_service.detect_and_encode_face(rgb_frame)
-        if error:
-            return jsonify({"error": error}), 400
+        # TODO : Notify any off cooldown
+        print(f"FOUND USER {closest_match}")
 
-        known_face_encodings.append(face_encoding)
-        known_face_names.append(name)
-        face_service.set_user_face_data(user_id, known_face_encodings, known_face_names)
-        return jsonify({"message": f"Face encoding for {name} saved."}), 200
-    else:
-        labels = face_service.recognize_faces_per_user(
-            rgb_frame, known_face_encodings, known_face_names
-        )
-        response = ", ".join(labels) if labels else "No faces detected."
-        return jsonify({"message": response}), 200
+        # TODO : Whichever notified, set last_seen
+        database_service.update_last_seen(user_id, closest_match["cid"])
 
 
 @app.route("/api/v1/pull_contacts", methods=["GET"])
@@ -209,14 +196,38 @@ def create_contact():
     5. Remove embeds from the temp table
     """
     user_id = get_jwt_identity()
-    cluster_id = None  # TODO
-    contact_name = None  # TODO, get from request
+    req_data = request.get_json()
+
+    if not req_data or "cluster_id" not in req_data or "contact_name" not in req_data:
+        return jsonify({"error": "Missing required parameters"}), 400
+
+    cluster_id = req_data["cluster_id"]
+    contact_name = req_data["contact_name"]
     cluster_embeds = database_service.pull_single_cluster(user_id, cluster_id)
-    avg_embed = None  # TODO
-    res = database_service.remove_single_cluster(user_id, cluster_id)
-    # TODO: Store new contact with name
-    # TODO: fail if db failed
-    # TODO: Return success
+
+    if not cluster_embeds:
+        return jsonify({"error": "Cluster not found"}), 404
+
+    avg_embed = np.mean(cluster_embeds, axis=0)
+    # Store new contact with name
+    success = database_service.create_contact(
+        user_id=user_id, name=contact_name, embedding=avg_embed.tolist()
+    )
+
+    # Fail if db failed
+    if not success:
+        return jsonify({"error": "Failed to create contact"}), 500
+
+    # Clean up, remove the cluster, and return
+    if not database_service.remove_single_cluster(user_id, cluster_id):
+        return jsonify({"error": "Contact created but failed to clean up cluster"}), 500
+
+    return (
+        jsonify(
+            {"message": "Contact created successfully", "contact_name": contact_name}
+        ),
+        201,
+    )
 
 
 @app.route("/api/v1/pull_timeline", methods=["GET"])
@@ -236,15 +247,12 @@ def pull_timeline():
     }
     """
     user_id = get_jwt_identity()
+
+    database_service.cleanup_old_embeddings(user_id)
     temp_embeds = database_service.pull_temp_embeds(user_id)
     cluster_ids = cluster_service.get_clusters(temp_embeds)
-    database_service.save_cluster_ids(user_id, cluster_ids)
+    database_service.save_cluster_ids(user_id, cluster_ids.tolist())
 
-    # TODO: hadnwayvd magic to get nice return format
-    res = None
-    # IVY NOTE: USE A GROUP BY WITH MINIMIM SIZE REQUIREMENT AND THEN JUST AUTOMATICALLY ASSIGN IT TO BE ID TO LAST SEEN TIMES
-    # IVY NOTE: Pull all groups, filter by group size, return id: [timestamps]
-    # IVY NOTE: IGNORE -1
     res = database_service.pull_clusters(user_id)
     return res
 

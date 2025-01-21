@@ -1,5 +1,6 @@
 import psycopg
 from contextlib import contextmanager
+from typing import List
 
 """
 - create a user
@@ -17,7 +18,10 @@ from contextlib import contextmanager
 class DatabaseService:
     def __init__(self, config):
         self.db_name = config.DB_NAME
+        self.schema_path = config.SCHEMA_PATH
         self.conn_string = f"dbname={self.db_name}"
+        self.min_cluster_size = config.MINIMUM_CLUSTER_SIZE
+        self.match_threshold = config.FACE_MATCH_THRESHOLD
 
         # Create database if it doesn't exist
         self._ensure_database_exists()
@@ -25,10 +29,41 @@ class DatabaseService:
         self._verify_tables()
 
     def _ensure_database_exists(self):
-        pass
+        """
+        Ensures the required database exists, creating it if necessary.
+        """
+        # Connect to default postgres database first to check/create our database
+        base_conn = psycopg.connect("dbname=postgres")
+        base_conn.autocommit = True
+
+        try:
+            with base_conn.cursor() as cur:
+                # Check if database exists
+                cur.execute(
+                    """
+                    SELECT 1 FROM pg_database 
+                    WHERE datname = %s;
+                    """,
+                    (self.db_name,),
+                )
+
+                if not cur.fetchone():
+                    # Create database if it doesn't exist
+                    cur.execute(f"CREATE DATABASE {self.db_name};")
+
+        finally:
+            base_conn.close()
 
     def _verify_tables(self):
-        pass
+        """
+        Verifies all required tables exist by executing the SQL schema file.
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Read the SQL file
+                with open(self.schema_path, "r") as file:
+                    cur.execute(file.read())
+                conn.commit()
 
     @contextmanager
     def get_connection(self):
@@ -147,31 +182,6 @@ class DatabaseService:
                 conn.commit()
                 return True
 
-    def add_contact(self, uid: int) -> int:
-        """
-        NOTE: The user should not have access to this
-            At first, this should make temp user and connect embeddings to it
-        TODO: This should also insert into the timeline and last seen category
-        """
-        with self.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO contacts (uid, temp)
-                        DEFAULT VALUES (%s, %s);
-                    """,
-                    (
-                        uid,
-                        True,
-                    ),
-                )
-
-                cur.fetchone()
-                cid = cur[0]
-
-                conn.commit()
-                return cid
-
     def get_contacts(self, uid: int):
         """
         Returns a list of contacts!
@@ -252,12 +262,9 @@ class DatabaseService:
         - name, vib_pattern, temp should all be front-end
     """
 
-    # TODO: Change this sometime
-    def change_embedding(self, uid: int, cid: int):
-        return
-
     # Create DB thing to pull timeline of events for an individual
     # TODO: Double check this works
+    # TODO: Totally change
     def pull_contact_timeline(self, cid: int):
         with self.get_connection() as conn:
             with conn.cursor() as cur:
@@ -278,10 +285,208 @@ class DatabaseService:
                 return timeline
         return None
 
-    # TODO: Update a user's timeline
-    def update_contact_timeline(self, cid: int, time: int):
-        return
+    def pull_single_cluster(self, uid: int, cluster_id: int):
+        """
+        Pulls all embeddings for a specific cluster ID for a user.
+        Returns list of embeddings or None if cluster not found.
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT embedding
+                    FROM loose_embeddings 
+                    WHERE uid = %s AND cluster_id = %s;
+                    """,
+                    (
+                        uid,
+                        cluster_id,
+                    ),
+                )
+                results = cur.fetchall()
+                if not results:
+                    return None
+                return [row[0] for row in results]
 
-    # TODO: IMPLEMENT THIS
-    def remove_all_temp_contacts(self, uid: int):
-        return
+    def create_contact(self, uid: int, name: str, embedding: list) -> bool:
+        """
+        Creates a new contact with the given name and averaged embedding.
+        Returns True if successful, False otherwise.
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO contacts (uid, name, embedding, last_seen)
+                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                    RETURNING cid;
+                    """,
+                    (uid, name, embedding),
+                )
+                conn.commit()
+                return True
+
+    def remove_single_cluster(self, user_id: int, cluster_id: str) -> bool:
+        """
+        Removes all embeddings associated with a specific cluster ID.
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    DELETE FROM loose_embeddings
+                    WHERE uid = %s AND cluster_id = %s;
+                    """,
+                    (user_id, cluster_id),
+                )
+                conn.commit()
+                return True
+
+    def pull_temp_embeds(self, uid: int) -> list:
+        """
+        Pulls all temporary embeddings for a user that aren't expired,
+        using the TEMP_EMBED_TIME_TO_LIVE config value
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT embedding
+                    FROM loose_embeddings
+                    WHERE uid = %s 
+                    ORDER BY eid
+                    """,
+                    (uid,),
+                )
+                results = cur.fetchall()
+                return [row[0] for row in results]
+
+    def save_cluster_ids(self, uid: int, cluster_ids: list[int]) -> bool:
+        """
+        Updates each embedding's cluster_id to match its corresponding value in cluster_ids.
+        The order of cluster_ids matches the embeddings when ordered by id.
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                # Get all embeddings IDs for this user
+                cur.execute(
+                    "SELECT id FROM loose_embeddings WHERE uid = %s ORDER BY id", (uid,)
+                )
+                embedding_ids = [row[0] for row in cur.fetchall()]
+
+                # Update each embedding with its cluster ID
+                # TODO: This is gonna be quite slow I think (maybe fine?)
+                for embedding_id, cluster_id in zip(embedding_ids, cluster_ids):
+                    cur.execute(
+                        """
+                        UPDATE loose_embeddings 
+                        SET cluster_id = %s 
+                        WHERE id = %s
+                    """,
+                        (cluster_id, embedding_id),
+                    )
+
+                conn.commit()
+                return True
+
+    def pull_clusters(self, uid: int) -> dict:
+        """
+        Pulls valid clusters for a user, returning a mapping of cluster IDs to timestamps.
+        Only includes clusters that meet the minimum size requirement and excludes noise points (cluster_id -1).
+
+        Args:
+            uid: User ID to pull clusters for
+
+        Returns:
+            dict: Mapping of cluster_id to list of timestamps, e.g. {1: ['2024-01-21 10:00:00', ...]}
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    WITH cluster_sizes AS (
+                        SELECT cluster_id, COUNT(*) as size
+                        FROM loose_embeddings
+                        WHERE uid = %s AND cluster_id != -1
+                        GROUP BY cluster_id
+                        HAVING COUNT(*) >= %s
+                    )
+                    SELECT le.cluster_id, array_agg(le.seen_at ORDER BY le.seen_at)
+                    FROM loose_embeddings le
+                    INNER JOIN cluster_sizes cs ON le.cluster_id = cs.cluster_id
+                    WHERE le.uid = %s
+                    GROUP BY le.cluster_id;
+                    """,
+                    (uid, self.min_cluster_size, uid),
+                )
+
+                results = cur.fetchall()
+                return {
+                    str(cluster_id): timestamps for cluster_id, timestamps in results
+                }
+
+    def cleanup_old_embeddings(self, uid: int) -> None:
+        """Deletes embeddings older than TEMP_EMBED_TIME_TO_LIVE for a specific user"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    DELETE FROM loose_embeddings
+                    WHERE uid = %s
+                    AND seen_at < CURRENT_TIMESTAMP - interval '1 day';
+                    """,
+                    (uid,),
+                )
+                conn.commit()
+
+    def pull_closest_contact(self, uid: int, embedding: list):
+        """Pull closest contact to the embedding"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT *
+                    FROM contacts
+                    WHERE uid = %s AND embedding <-> %s < %s 
+                    ORDER BY embedding <-> %s
+                    LIMIT 1
+                    """,
+                    (uid, embedding, self.match_threshold, embedding),
+                )
+
+                columns = [desc[0] for desc in cur.description]
+                results = cur.fetchone()
+
+                if not results:
+                    return None
+
+                return dict(zip(columns, results))
+
+    def update_last_seen(self, uid: int, cid: int):
+        """Updates the last_seen time of a contact"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE contacts 
+                    SET last_seen = CURRENT_TIMESTAMP
+                    WHERE uid = %s AND cid = %s;
+                    """,
+                    (uid, cid),
+                )
+            conn.commit()
+            return True
+
+    def add_loose_embedding(self, uid: int, embedding: list):
+        """Adds a loose embedding to the database"""
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO loose_embeddings (uid, embedding, seen_at)
+                    VALUES (%s, %s, CURRENT_TIMESTAMP);
+                    """,
+                    (uid, embedding),
+                )
+            conn.commit()
+            return True
