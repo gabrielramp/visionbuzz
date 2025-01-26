@@ -3,26 +3,94 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'themes.dart' as themer;
 
 class DevicePage extends StatelessWidget {
+  final WIFI_SERVICE_UUID = "0001f0de-bc9a-7856-3412-004200000069";
   const DevicePage({super.key});
 
-  void ScanForBluetoothDevices() {
+  void ScanForBluetoothDevices() async {
     print("Scanning For Bluetooth Devices");
     FlutterBlue fb = FlutterBlue.instance;
-    fb.startScan(timeout: Duration(seconds: 4));
+    fb.startScan(timeout: Duration(seconds: 10));
     // ("Damnb");
 
     // Listen to scan results
-    // var subscription = fb.scanResults.listen((results) {
-    //   // do something with scan results
-    //   // print(results);
-    //   for (ScanResult r in results) {
-    //     print('${r.device.name} found! rssi: ${r.rssi}');
-    //   }
-    // });
+    var device = null;
+    late var subscription;
+    subscription = fb.scanResults.listen(
+      (results) {
+        // do something with scan results
+        // print(results);
+        for (ScanResult r in results) {
+          if (r.device.name == "August Device") {
+            print("Found August Device");
+            device = r.device;
+            connectToDevice(device);
+            // getServices(device);
+            // print("Connected to August Device");
+
+            subscription.cancel();
+            fb.stopScan();
+            break;
+          } else {
+            print('${r.device.name} not AD');
+          }
+        }
+      },
+      onDone: () {
+        print("finito");
+      },
+      // on
+    );
+    // if (device.name == "August Device") {
+    //   device.connect();
+    //   print("Conected to August Device");
+    // } else {
+    //   print("No Device Found");
+    // }
+    // await device.connect();
+    // print("Conected to August Device");
+    // List<BluetoothService> services = await device.discoverServices();
+
+    print("Exited subscription");
+    print("Stopped Scan");
 
     // Stop scanning
-    // fb.stopScan();
+    fb.stopScan();
   }
+
+  Future connectToDevice(BluetoothDevice device) async {
+    await device.connect();
+    print("Connected to " + device.name);
+    getServices(device);
+  }
+
+  Future getServices(BluetoothDevice device) async {
+    List<BluetoothService> services = await device.discoverServices();
+    var wifiService = null;
+    for (BluetoothService service in services) {
+      if (service.uuid.toString() == WIFI_SERVICE_UUID) {
+        wifiService = service;
+        print("Found Wifi Service");
+        for (BluetoothCharacteristic c in wifiService.characteristics) {
+          readCharacteristic(c); // print(c.uuid.toString());
+        }
+      } else {
+        print("Did not find Wifi Service");
+      }
+    }
+    // print(services);
+  }
+
+  Future readCharacteristic(BluetoothCharacteristic c) {
+    print("RELEVANT DATA");
+    c.value.listen((value) => print(value));
+    return c.read();
+  }
+
+  // Future readCharValue(Future<List<int>> val) async {
+  //   for (var indie in val) {
+  //     print(indie);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
