@@ -130,6 +130,7 @@ def upload_image():
     face_embeds = face_service.get_face_embeds(frame)
 
     # NOTE: Change this to just notify of the person in the middle of the frame
+    # TODO: cid becomes a useless thing to save
     for embed in face_embeds:
         # Check against all contacts
         closest_match = database_service.pull_closest_contact(user_id, embed.tolist())
@@ -139,7 +140,7 @@ def upload_image():
             continue
 
         # TODO : Notify any off cooldown
-        print(f"Found contact {closest_match['cid']}")
+        print(f"Found contact {closest_match['name']}")
 
         # TODO : Whichever notified, set last_seen
         database_service.update_last_seen(user_id, closest_match["cid"])
