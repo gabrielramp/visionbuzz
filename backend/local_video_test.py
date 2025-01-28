@@ -1,16 +1,15 @@
 """
-THINGS WE'RE TESTING:
-- Has to embed correctly
-- While running test script, make API call and pulls timeline
-- Make sure we can create a contact
-- Maybe add an endpoint to just pulling embeddings?
-- Show who it's identifying
+NOTES FOR USAGE:
+- Have a login with an account (I'm using test6 with password test6)
 
-NOTES:
-- Has to login w/ an account
+CONTROLS:
+- c: cluster loose embeddings
+- r: refresh connection
+- 0-9: add contact for cluster
+- q: quit
 
-THINGS MISSING:
-- Doesn't test clean up function
+Every 0.5 seconds, the image is uploaded to the server. Press the buttons
+while the camera is running to test the functionality.
 """
 
 import cv2
