@@ -1,4 +1,5 @@
 import psycopg
+import numpy as np
 from contextlib import contextmanager
 from typing import List
 
@@ -321,7 +322,7 @@ class DatabaseService:
                     VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
                     RETURNING cid;
                     """,
-                    (uid, name, embedding),
+                    (uid, name, str(embedding)),
                 )
                 conn.commit()
                 return True
@@ -370,7 +371,8 @@ class DatabaseService:
             with conn.cursor() as cur:
                 # Get all embeddings IDs for this user
                 cur.execute(
-                    "SELECT id FROM loose_embeddings WHERE uid = %s ORDER BY id", (uid,)
+                    "SELECT eid FROM loose_embeddings WHERE uid = %s ORDER BY eid",
+                    (uid,),
                 )
                 embedding_ids = [row[0] for row in cur.fetchall()]
 
@@ -381,7 +383,7 @@ class DatabaseService:
                         """
                         UPDATE loose_embeddings 
                         SET cluster_id = %s 
-                        WHERE id = %s
+                        WHERE eid = %s
                     """,
                         (cluster_id, embedding_id),
                     )
@@ -447,11 +449,11 @@ class DatabaseService:
                     """
                     SELECT *
                     FROM contacts
-                    WHERE uid = %s AND embedding <-> %s < %s 
+                    WHERE uid = %s AND (embedding <-> %s < %s)
                     ORDER BY embedding <-> %s
                     LIMIT 1
                     """,
-                    (uid, embedding, self.match_threshold, embedding),
+                    (uid, str(embedding), self.match_threshold, str(embedding)),
                 )
 
                 columns = [desc[0] for desc in cur.description]

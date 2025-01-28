@@ -20,17 +20,19 @@ Content-Type: application/json
 }
 
 
-### Test local image testing upload
+### New test local image upload
 
 POST http://127.0.0.1:5000/api/v1/test_upload
-Content-Type: multipart/form-data; boundary=----boundary123
-
-------boundary123
-Content-Disposition: form-data; name="image"; filename="local_image.jpg"
-Content-Type: image/jpeg
+Content-Type: application/octet-stream
 
 < ./assets/lein_joker.jpg
 
-------boundary123--
+### Test create contact from cluster (needs bearer token)
+POST http://127.0.0.1:5000/api/v1/create_contact
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
-### 
+{
+    "cluster_id": "123",
+    "contact_name": "John Doe"
+}

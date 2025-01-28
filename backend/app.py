@@ -1,3 +1,4 @@
+import ast
 import io
 import os
 from datetime import datetime, timedelta
@@ -7,6 +8,7 @@ import cv2
 import numpy as np
 from settings import get_config
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
@@ -21,7 +23,7 @@ from services.password_service import PasswordServive
 from firebase_admin import messaging
 
 app = Flask(__name__)
-
+CORS(app)
 # FLASK SETUP
 config = get_config()
 app.config.from_object(config)
@@ -43,7 +45,7 @@ def login():
     if not password_service.verify_password(password, enc_password):
         return jsonify({"msg": "Bad username or password"}), 401
 
-    uid = database_service.get_uid(username)
+    uid = str(database_service.get_uid(username))
     access_token = create_access_token(identity=uid)
     refresh_token = create_refresh_token(identity=uid)
     return jsonify(access_token=access_token, refresh_token=refresh_token)
@@ -113,7 +115,6 @@ def upload_image():
     NOTE: DONT NEED CLUSTERSERVICE HERE JUST ADD IT TO THE DABATABTE
     """
     user_id = get_jwt_identity()
-    # user_id = "test_user_id"
 
     # We should use stream for less overhead & make it easier
     img_data = io.BytesIO(request.data)
@@ -137,10 +138,12 @@ def upload_image():
             continue
 
         # TODO : Notify any off cooldown
-        print(f"FOUND USER {closest_match}")
+        print(f"Found contact {closest_match['cid']}")
 
         # TODO : Whichever notified, set last_seen
         database_service.update_last_seen(user_id, closest_match["cid"])
+
+    return jsonify({"message": "Image uploaded successfully"}), 200
 
 
 @app.route("/api/v1/pull_contacts", methods=["GET"])
@@ -204,14 +207,14 @@ def create_contact():
     cluster_id = req_data["cluster_id"]
     contact_name = req_data["contact_name"]
     cluster_embeds = database_service.pull_single_cluster(user_id, cluster_id)
+    cluster_embeds = [ast.literal_eval(embed_str) for embed_str in cluster_embeds]
 
     if not cluster_embeds:
         return jsonify({"error": "Cluster not found"}), 404
-
     avg_embed = np.mean(cluster_embeds, axis=0)
     # Store new contact with name
     success = database_service.create_contact(
-        user_id=user_id, name=contact_name, embedding=avg_embed.tolist()
+        uid=user_id, name=contact_name, embedding=avg_embed.tolist()
     )
 
     # Fail if db failed
@@ -226,7 +229,7 @@ def create_contact():
         jsonify(
             {"message": "Contact created successfully", "contact_name": contact_name}
         ),
-        201,
+        200,
     )
 
 
@@ -250,7 +253,10 @@ def pull_timeline():
 
     database_service.cleanup_old_embeddings(user_id)
     temp_embeds = database_service.pull_temp_embeds(user_id)
-    cluster_ids = cluster_service.get_clusters(temp_embeds)
+    # TODO: MOVE THIS TO DB SERVICE
+    embeds = [ast.literal_eval(embed_str) for embed_str in temp_embeds]
+    embeds_array = np.array(embeds)
+    cluster_ids = cluster_service.get_clusters(embeds_array)
     database_service.save_cluster_ids(user_id, cluster_ids.tolist())
 
     res = database_service.pull_clusters(user_id)

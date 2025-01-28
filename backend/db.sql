@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS contacts (
 
 -- NOTE: Maybe add back button and something to support images later
 CREATE TABLE IF NOT EXISTS loose_embeddings (
-    eid          serial PRIMARY KEY,
+    eid           serial PRIMARY KEY,
     uid           integer REFERENCES users(uid) ON DELETE CASCADE,
     embedding     vector(128) NOT NULL,
     seen_at       timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,

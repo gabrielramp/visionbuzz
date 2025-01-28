@@ -13,14 +13,21 @@ class FaceService:
         """
         Realigns faces based on information in face_shapes, returns cropped face
         """
-        return dlib.get_face_chips(rgb_frame, face_shapes)
+        # Convert list of face_shapes to full_object_detections object
+        faces = dlib.full_object_detections(face_shapes)
+        return dlib.get_face_chips(rgb_frame, faces)
 
     # TODO: Replace detector with YuNet (dlib detector isnt great)
     def get_faces(self, rgb_frame):
         """
         Detects faces in frame, returns cropped re-aligned images of faces
         """
-        face_shapes = self.detector(rgb_frame, 0)
+        faces = self.detector(rgb_frame, 0)
+        if len(faces) == 0:
+            return []
+
+        # Get face shapes for all detected faces
+        face_shapes = [self.sp(rgb_frame, face) for face in faces]
         return self.get_aligned_faces(rgb_frame, face_shapes)
 
     # TODO: Should we make this a queue or something to avoid overloading the server?
