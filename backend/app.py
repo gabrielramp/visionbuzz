@@ -129,6 +129,7 @@ def upload_image():
 
     face_embeds = face_service.get_face_embeds(frame)
 
+    # NOTE: Change this to just notify of the person in the middle of the frame
     for embed in face_embeds:
         # Check against all contacts
         closest_match = database_service.pull_closest_contact(user_id, embed.tolist())
