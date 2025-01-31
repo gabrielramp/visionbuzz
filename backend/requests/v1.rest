@@ -1,0 +1,40 @@
+
+### Login/register endpoints
+
+POST http://127.0.0.1:5000/api/v1/login
+Content-Type: application/json
+
+{
+    "username": "test6",
+    "password": "test6"
+}
+
+###
+
+POST http://127.0.0.1:5000/api/v1/register
+Content-Type: application/json
+
+{
+    "username": "test6",
+    "password": "test6"
+}
+
+
+### Test local image testing upload
+
+POST http://127.0.0.1:5000/api/v1/test_upload
+Content-Type: multipart/form-data; boundary=----boundary123
+
+------boundary123
+Content-Disposition: form-data; name="image"; filename="local_image.jpg"
+Content-Type: image/jpeg
+
+< ./assets/lein_joker.jpg
+
+------boundary123--
+
+### 
+GET http://127.0.0.1:5000/api/v1/test_notify
+Content-Type: application/json
+
+### 

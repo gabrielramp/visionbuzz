@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
+
 import 'contacts.dart' as contactsWidget;
 import 'upload.dart' as uploadWidget;
 import 'device.dart' as deviceWidget;
@@ -7,7 +11,20 @@ import 'home.dart' as homeWidget;
 import 'main.dart' as mainPage;
 import 'themes.dart' as themes;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Request permissions for iOS
+  NotificationSettings settings = await messaging.requestPermission();
+  print('User granted permission: ${settings.authorizationStatus}');
+
+  // Get the device token
+  String? token = await messaging.getToken();
+  print("Firebase device token: $token");
   runApp(const MyApp());
 }
 

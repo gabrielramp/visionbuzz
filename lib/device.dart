@@ -3,7 +3,16 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'themes.dart' as themer;
 
 class DevicePage extends StatelessWidget {
+  final VIBRATOR_SERVICE_UUID = "0000f0de-bc9a-7856-3412-004200000069";
+  final VIBRATOR_CTRL_UUID = "0010f0de-bc9a-7856-3412-004200000069";
   final WIFI_SERVICE_UUID = "0001f0de-bc9a-7856-3412-004200000069";
+  final WIFI_SSID_UUID = "0101f0de-bc9a-7856-3412-004200000069";
+  final WIFI_USERNAME_UUID = "0201f0de-bc9a-7856-3412-004200000069";
+  final WIFI_IDENTITY_UUID = "0301f0de-bc9a-7856-3412-004200000069";
+  final WIFI_PASSWORD_UUID = "0401f0de-bc9a-7856-3412-004200000069";
+  final WIFI_CONNECT_UUID = "0501f0de-bc9a-7856-3412-004200000069";
+
+  final DEVICE_NAME = "August Device";
   const DevicePage({super.key});
 
   void ScanForBluetoothDevices() async {
@@ -65,13 +74,23 @@ class DevicePage extends StatelessWidget {
 
   Future getServices(BluetoothDevice device) async {
     List<BluetoothService> services = await device.discoverServices();
+    print("Services Found");
     var wifiService = null;
     for (BluetoothService service in services) {
       if (service.uuid.toString() == WIFI_SERVICE_UUID) {
         wifiService = service;
         print("Found Wifi Service");
         for (BluetoothCharacteristic c in wifiService.characteristics) {
-          readCharacteristic(c); // print(c.uuid.toString());
+          if (c.uuid.toString() == WIFI_USERNAME_UUID) {
+            print("Found Wifi Username Char");
+            await writeToCharacteristic(c, "we ballin");
+            print("Finished writing");
+          }
+
+          await readCharacteristic(c); // print(c.uuid.toString());
+          // print("UUID: " + c.uuid.toString());
+          // print("Wifer: " + WIFI_IDENTITY_UUID);
+          // print("Window");
         }
       } else {
         print("Did not find Wifi Service");
@@ -80,10 +99,27 @@ class DevicePage extends StatelessWidget {
     // print(services);
   }
 
-  Future readCharacteristic(BluetoothCharacteristic c) {
+  Future readCharacteristic(BluetoothCharacteristic c) async {
     print("RELEVANT DATA");
-    c.value.listen((value) => print(value));
+    c.value.listen((value) {
+      String total = "";
+      for (int valley in value) {
+        total += String.fromCharCode(valley);
+        // print(String.fromCharCode(valley))
+      }
+      print("Characteristic UUID = " + c.uuid.toString());
+      print("Characteristic value = " + total);
+    });
     return c.read();
+  }
+
+  Future writeToCharacteristic(BluetoothCharacteristic c, String input) async {
+    print("Writing " + input + " to " + c.uuid.toString());
+    var chars = input.runes.toList();
+    // await c.write(chars);
+    // print("Written");
+    // await readCharacteristic(c);
+    return c.write(chars);
   }
 
   // Future readCharValue(Future<List<int>> val) async {
@@ -155,7 +191,7 @@ class DevicePage extends StatelessWidget {
 class CornerBorderPainter extends CustomPainter {
   static final ColorScheme colorScheme =
       themer.Themes().getAppThemes()[0].colorScheme;
-  static final double cornerWidth = 100;
+  static final double cornerWidth = 50;
   @override
   final Paint stroke = Paint()
     ..color = colorScheme.primary

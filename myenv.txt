@@ -1,0 +1,3 @@
+export PATH=/Users/cjcosby/.rbenv/shims:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/cjcosby/deps/flutter/bin:$PATH
+export PATH="$PATH":"$HOME/.pub-cache/bin"
+export PATH="$PATH":"/usr/local/bin/python3" 

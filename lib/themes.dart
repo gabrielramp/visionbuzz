@@ -11,7 +11,7 @@ class Themes {
       color: _mainColor,
     )),
     textTheme: TextTheme(
-      titleMedium: TextStyle(fontSize: 60, fontStyle: FontStyle.italic),
+      titleMedium: TextStyle(fontSize: 40, fontStyle: FontStyle.italic),
       headlineMedium: TextStyle(
           fontSize: 35, fontWeight: FontWeight.w700, color: _mainColor),
       headlineSmall: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),

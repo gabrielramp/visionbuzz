@@ -1,12 +1,11 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/ch224634/proj/flutter
-FLUTTER_APPLICATION_PATH=/Users/ch224634/proj/visionbuzz
+FLUTTER_ROOT=/Users/cjcosby/deps/flutter
+FLUTTER_APPLICATION_PATH=/Users/cjcosby/proj/visionbuzz
 COCOAPODS_PARALLEL_CODE_SIGN=true
-FLUTTER_TARGET=/Users/ch224634/proj/visionbuzz/lib/main.dart
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.0
 FLUTTER_BUILD_NUMBER=1
 DART_OBFUSCATION=false
 TRACK_WIDGET_CREATION=true
 TREE_SHAKE_ICONS=false
-PACKAGE_CONFIG=/Users/ch224634/proj/visionbuzz/.dart_tool/package_config.json
+PACKAGE_CONFIG=.dart_tool/package_config.json

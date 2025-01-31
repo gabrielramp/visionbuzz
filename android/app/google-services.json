@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "3606097715",
+    "project_id": "senior-design-50b1e",
+    "storage_bucket": "senior-design-50b1e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3606097715:android:6d52f2a42e341e32241846",
+        "android_client_info": {
+          "package_name": "com.example.visionbuzz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMVMJrUwneP3YenkJ59z-B-7KAJGThsvc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3606097715:android:7e613e0c0a1b52d4241846",
+        "android_client_info": {
+          "package_name": "com.visionbuzz.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMVMJrUwneP3YenkJ59z-B-7KAJGThsvc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3606097715:android:1ca0883893e86e5f241846",
+        "android_client_info": {
+          "package_name": "com.visionbuzz.firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMVMJrUwneP3YenkJ59z-B-7KAJGThsvc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

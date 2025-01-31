@@ -118,7 +118,7 @@ class ContactsPage extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                    height: 100,
+                    height: 75,
                     margin: EdgeInsets.only(right:20),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -128,7 +128,7 @@ class ContactsPage extends StatelessWidget {
                       padding:EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(
                       Icons.person,
-                      size: 90,
+                      size: 70,
                       color: colorScheme.secondary,
                     ))),
                 Text(
