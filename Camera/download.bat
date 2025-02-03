@@ -1,0 +1,1 @@
+pscp -pw TDFPmYZKqLWvYw5a root@proso-server:/srv/visionbuzz/backend/app.py C:/SD/visionbuzz/Camera/
