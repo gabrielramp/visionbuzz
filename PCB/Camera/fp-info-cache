@@ -1,4 +1,4 @@
-24270841435581680
+24274323303532963
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -2702,6 +2702,20 @@ Gauge Massstab 100mm SilkScreenTop Type 2
 0
 0
 Camera_Components
+6x6x4.3 SMD button
+
+
+0
+4
+2
+Camera_Components
+24-pin-FPC-0.5mm
+
+
+0
+26
+24
+Camera_Components
 Camera_Interface
 
 
@@ -2720,8 +2734,8 @@ Flash_Interface
 
 
 0
-5
-5
+7
+7
 Capacitor_SMD
 CP_Elec_3x5.3
 SMT capacitor, aluminium electrolytic, 3x5.3, Cornell Dubilier Electronics 
