@@ -43,7 +43,8 @@ Creates a new user account and returns JWT tokens.
 ```json
 {
     "username": "string",
-    "password": "string"
+    "password": "string", 
+    "firebase_token": "string"
 }
 ```
 

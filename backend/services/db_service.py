@@ -112,7 +112,8 @@ class DatabaseService:
 
                 return uid
 
-    def create_user(self, username: str, pwd: str) -> int:
+    # TODO: Take in firebase_token
+    def create_user(self, username: str, pwd: str, firebase_token: str) -> int:
         """
         Returns UID?
         """
@@ -120,13 +121,10 @@ class DatabaseService:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO users (username, pwd)
-                        VALUES (%s, %s);
+                    INSERT INTO users (username, pwd, firebase_token)
+                        VALUES (%s, %s, %s);
                     """,
-                    (
-                        username,
-                        pwd,
-                    ),
+                    (username, pwd, firebase_token),
                 )
 
                 cur.execute(

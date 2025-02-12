@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timedelta
 from PIL import Image
 
-import cv2
 import numpy as np
 from settings import get_config
 from flask import Flask, jsonify, request
@@ -55,12 +54,13 @@ def login():
 def register():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
+    firebase_token = request.json.get("firebaes_token", None)
 
     if database_service.check_user_taken(username):
         return jsonify({"msg": "Username already taken"}), 401
 
     uid = database_service.create_user(
-        username, password_service.hash_password(password)
+        username, password_service.hash_password(password), firebase_token
     )
     access_token = create_access_token(identity=uid)
     refresh_token = create_refresh_token(identity=uid)
@@ -94,9 +94,6 @@ def test_upload_image():
     return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
 
 
-# TODO: Should move almost all this logic into face_service
-# TODO: Should fully take the image and do all the things (IVY: taking a break, work for later)
-# TODO: THIS FUNCTION ALSO DOESNT WORK FULLY YET
 @app.route("/api/v1/upload_image", methods=["POST"])
 @jwt_required()
 def upload_image():
@@ -104,7 +101,6 @@ def upload_image():
     Submits an image for the AI people to do their thing
     NOTE: Whatever gets sent back doesn't matter since ESP32 isn't taking
 
-    TODO: NEW FLOW
     TODO: This also needs to send notifs if long enough time has elapsed
 
     1. Get all face embeddings
@@ -112,7 +108,6 @@ def upload_image():
         2.1 Notify any that aren't on cooldown
         2.2 Update last_seen time for all contacts
     3. For all unknown, add to the temp_embed table
-    NOTE: DONT NEED CLUSTERSERVICE HERE JUST ADD IT TO THE DABATABTE
     """
     user_id = get_jwt_identity()
 
