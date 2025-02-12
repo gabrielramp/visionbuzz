@@ -123,6 +123,7 @@ def upload_image():
     frame = np.array(img)
 
     face_embeds = face_service.get_face_embeds(frame)
+    user_fb_token = database_service.get_firebase_token(user_id)
 
     # NOTE: Change this to just notify of the person in the middle of the frame
     # TODO: cid becomes a useless thing to save
@@ -134,8 +135,10 @@ def upload_image():
             database_service.add_loose_embedding(user_id, embed.tolist())
             continue
 
+        print(f"Found contact {closest_match['name']}, {closest_match['last_found']}")
+        print(type(closest_match["last_found"]))
+
         # TODO : Notify any off cooldown
-        print(f"Found contact {closest_match['name']}")
 
         # TODO : Whichever notified, set last_seen
         database_service.update_last_seen(user_id, closest_match["cid"])
