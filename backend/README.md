@@ -19,3 +19,12 @@ $ <you might have to setup a database with the same name as in settings.py, i cb
 $ <hahah then run db.sql on your table but this doesn't work yet fuck me>
 $ flask run!!!! yipeee
 ```
+
+### How to run the local test
+
+```
+$ flask run
+$ python local_video_test.py
+```
+
+Run these in two separate terminals
