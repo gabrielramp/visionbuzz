@@ -124,6 +124,7 @@ def upload_image():
 
     face_embeds = face_service.get_face_embeds(frame)
     user_fb_token = database_service.get_firebase_token(user_id)
+    print(user_fb_token)
 
     # NOTE: Change this to just notify of the person in the middle of the frame
     # TODO: cid becomes a useless thing to save
@@ -135,12 +136,25 @@ def upload_image():
             database_service.add_loose_embedding(user_id, embed.tolist())
             continue
 
-        print(f"Found contact {closest_match['name']}, {closest_match['last_found']}")
-        print(type(closest_match["last_found"]))
+        # print(closest_match)
+        # print(f"Found contact {closest_match['name']}, {closest_match['last_seen']}")
 
-        # TODO : Notify any off cooldown
+        time_since_last_seen = datetime.now().astimezone() - closest_match["last_seen"]
+        # print(time_since_last_seen)
+        if user_fb_token is not None and time_since_last_seen > config.NOTIF_COOLDOWN:
+            # print(f"hi, should send notif for {closest_match['name']}")
+            # Notify with cloudflare
+            msg = messaging.Message(
+                notification=messaging.Notification(
+                    title="Contact found!",
+                    body=f"You have just looked at {closest_match['name']}",
+                ),
+                token=user_fb_token,
+            )
+            response = messaging.send(msg)
+            print("Successfully sent msg:", response)
 
-        # TODO : Whichever notified, set last_seen
+        # Always set last seen
         database_service.update_last_seen(user_id, closest_match["cid"])
 
     return jsonify({"message": "Image uploaded successfully"}), 200
