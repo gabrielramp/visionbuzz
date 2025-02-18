@@ -2708,6 +2708,12 @@
 		(uuid "09188e1f-bd2a-4b24-9c1a-37034c9965fc")
 	)
 	(junction
+		(at 96.52 36.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "11cab5f7-9e87-4bcb-b6c2-43483178db95")
+	)
+	(junction
 		(at 241.3 44.45)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2750,7 +2756,7 @@
 		(uuid "5f9410b3-8acb-4213-b40e-4a7758996a97")
 	)
 	(junction
-		(at 175.26 46.99)
+		(at 193.04 41.91)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "802a1301-5566-44c6-ad2a-cfc216bc5709")
@@ -2780,7 +2786,7 @@
 		(uuid "c8237589-5261-4c53-9cb6-cb7124271a5a")
 	)
 	(junction
-		(at 162.56 36.83)
+		(at 180.34 31.75)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "def5ff71-06d9-4192-9d07-9052e97ac3d9")
@@ -3045,7 +3051,7 @@
 	)
 	(wire
 		(pts
-			(xy 152.4 36.83) (xy 162.56 36.83)
+			(xy 170.18 31.75) (xy 180.34 31.75)
 		)
 		(stroke
 			(width 0)
@@ -3135,7 +3141,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 33.02) (xy 185.42 36.83)
+			(xy 203.2 27.94) (xy 203.2 31.75)
 		)
 		(stroke
 			(width 0)
@@ -3305,7 +3311,7 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 41.91) (xy 111.76 52.07)
+			(xy 146.05 41.91) (xy 146.05 52.07)
 		)
 		(stroke
 			(width 0)
@@ -3325,7 +3331,7 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 41.91) (xy 104.14 52.07)
+			(xy 138.43 41.91) (xy 138.43 52.07)
 		)
 		(stroke
 			(width 0)
@@ -3345,7 +3351,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 46.99) (xy 175.26 57.15)
+			(xy 193.04 41.91) (xy 193.04 52.07)
 		)
 		(stroke
 			(width 0)
@@ -3505,16 +3511,6 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 115.57) (xy 189.23 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "849f34a4-8993-4d7f-8324-82333a09e9b4")
-	)
-	(wire
-		(pts
 			(xy 62.23 31.75) (xy 62.23 36.83)
 		)
 		(stroke
@@ -3565,7 +3561,7 @@
 	)
 	(wire
 		(pts
-			(xy 162.56 36.83) (xy 170.18 36.83)
+			(xy 180.34 31.75) (xy 187.96 31.75)
 		)
 		(stroke
 			(width 0)
@@ -3585,7 +3581,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 44.45) (xy 175.26 46.99)
+			(xy 193.04 39.37) (xy 193.04 41.91)
 		)
 		(stroke
 			(width 0)
@@ -3605,7 +3601,7 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 36.83) (xy 185.42 36.83)
+			(xy 198.12 31.75) (xy 203.2 31.75)
 		)
 		(stroke
 			(width 0)
@@ -3642,6 +3638,16 @@
 			(type default)
 		)
 		(uuid "9c619972-1f26-4f9c-83cd-0b2c4bd1d363")
+	)
+	(wire
+		(pts
+			(xy 86.36 36.83) (xy 96.52 36.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9d3fe87c-7db5-4e9f-9122-245e221f11fd")
 	)
 	(wire
 		(pts
@@ -3745,6 +3751,16 @@
 	)
 	(wire
 		(pts
+			(xy 199.39 107.95) (xy 189.23 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a6a56330-b7f8-4b60-ae7d-c25b41f319b0")
+	)
+	(wire
+		(pts
 			(xy 161.29 69.85) (xy 154.94 69.85)
 		)
 		(stroke
@@ -3795,7 +3811,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 41.91) (xy 127 52.07)
+			(xy 161.29 41.91) (xy 161.29 52.07)
 		)
 		(stroke
 			(width 0)
@@ -3825,7 +3841,7 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 46.99) (xy 175.26 46.99)
+			(xy 190.5 41.91) (xy 193.04 41.91)
 		)
 		(stroke
 			(width 0)
@@ -3855,13 +3871,33 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 46.99) (xy 162.56 46.99)
+			(xy 182.88 41.91) (xy 180.34 41.91)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "c52b2b6f-f118-4b57-9d1a-49ad49ab871b")
+	)
+	(wire
+		(pts
+			(xy 96.52 36.83) (xy 104.14 36.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c97da714-ea29-43db-8e0d-16721e29a49f")
+	)
+	(wire
+		(pts
+			(xy 114.3 36.83) (xy 123.19 36.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cb4aa1fc-70cf-44b7-a4c1-93e71dc4adc6")
 	)
 	(wire
 		(pts
@@ -3885,7 +3921,7 @@
 	)
 	(wire
 		(pts
-			(xy 107.95 41.91) (xy 107.95 52.07)
+			(xy 142.24 41.91) (xy 142.24 52.07)
 		)
 		(stroke
 			(width 0)
@@ -3915,6 +3951,16 @@
 	)
 	(wire
 		(pts
+			(xy 199.39 111.76) (xy 185.42 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db083e28-0b5b-4e91-bb9b-9eda9055f0f5")
+	)
+	(wire
+		(pts
 			(xy 81.28 166.37) (xy 81.28 168.91)
 		)
 		(stroke
@@ -3922,6 +3968,16 @@
 			(type default)
 		)
 		(uuid "db74ef47-01a6-4dc4-865a-42f34d94d429")
+	)
+	(wire
+		(pts
+			(xy 86.36 44.45) (xy 96.52 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dc90d7b3-1055-4b2c-8389-af1224bb3177")
 	)
 	(wire
 		(pts
@@ -3935,7 +3991,7 @@
 	)
 	(wire
 		(pts
-			(xy 162.56 46.99) (xy 162.56 36.83)
+			(xy 180.34 41.91) (xy 180.34 31.75)
 		)
 		(stroke
 			(width 0)
@@ -4015,7 +4071,7 @@
 	)
 	(wire
 		(pts
-			(xy 189.23 33.02) (xy 189.23 43.18)
+			(xy 207.01 27.94) (xy 207.01 38.1)
 		)
 		(stroke
 			(width 0)
@@ -4035,7 +4091,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 41.91) (xy 115.57 52.07)
+			(xy 149.86 41.91) (xy 149.86 52.07)
 		)
 		(stroke
 			(width 0)
@@ -4135,7 +4191,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 41.91) (xy 123.19 52.07)
+			(xy 157.48 41.91) (xy 157.48 52.07)
 		)
 		(stroke
 			(width 0)
@@ -4195,6 +4251,48 @@
 		(uuid "0173d5f6-fa20-46cc-9526-519c022e19a4")
 		(property "Ground" ""
 			(at 95.25 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify right)
+			)
+		)
+	)
+	(label "V_CTRL"
+		(at 190.5 107.95 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "02438922-d9a8-406a-bcf3-487011eee446")
+		(property "Ground" ""
+			(at 190.5 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(label "GND"
+		(at 120.65 36.83 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0b962a17-b6f7-4f33-80ca-890328934379")
+		(property "Ground" ""
+			(at 120.65 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4498,6 +4596,27 @@
 			)
 		)
 	)
+	(label "3.3V"
+		(at 92.71 44.45 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "41826652-5849-4f87-b282-8fd587ed5cf0")
+		(property "Ground" ""
+			(at 92.71 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify right)
+			)
+		)
+	)
 	(label "CAM_DATA2"
 		(at 100.33 119.38 180)
 		(fields_autoplaced yes)
@@ -4646,7 +4765,7 @@
 		)
 	)
 	(label "B_TX"
-		(at 127 44.45 270)
+		(at 161.29 44.45 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4656,7 +4775,7 @@
 		)
 		(uuid "5a912f95-818c-4170-80c1-f61757f2905a")
 		(property "Ground" ""
-			(at 128.27 44.45 90)
+			(at 162.56 44.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4814,7 +4933,7 @@
 		)
 	)
 	(label "3.3V"
-		(at 161.29 36.83 180)
+		(at 179.07 31.75 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4824,7 +4943,7 @@
 		)
 		(uuid "6ed3ca47-7175-472b-a1fd-6c29f7b112ab")
 		(property "Ground" ""
-			(at 161.29 38.1 0)
+			(at 179.07 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4876,29 +4995,8 @@
 			)
 		)
 	)
-	(label "V_CTRL"
-		(at 190.5 115.57 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "7e6ff878-fe0f-4747-8c66-86627c07e422")
-		(property "Ground" ""
-			(at 190.5 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-			)
-		)
-	)
 	(label "GND"
-		(at 115.57 48.26 90)
+		(at 149.86 48.26 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4908,13 +5006,34 @@
 		)
 		(uuid "80650055-bdc2-4033-9039-be3d7f7a3a1d")
 		(property "Ground" ""
-			(at 116.84 48.26 90)
+			(at 151.13 48.26 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 					(italic yes)
 				)
 				(justify left)
+			)
+		)
+	)
+	(label "GEN_BTN"
+		(at 95.25 36.83 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "81cf8243-5dca-4cee-9989-a2ce5a51b1e5")
+		(property "Ground" ""
+			(at 95.25 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -5255,7 +5374,7 @@
 		)
 	)
 	(label "B_RX"
-		(at 123.19 44.45 270)
+		(at 157.48 44.45 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5265,7 +5384,7 @@
 		)
 		(uuid "bd9e607e-220a-4f13-90bd-ec8cdc2eb57a")
 		(property "Ground" ""
-			(at 124.46 44.45 90)
+			(at 158.75 44.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5402,7 +5521,7 @@
 		)
 	)
 	(label "V_CTRL"
-		(at 175.26 55.88 90)
+		(at 193.04 50.8 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5412,7 +5531,7 @@
 		)
 		(uuid "ce06acd2-ac95-40aa-8292-7a0c8babf9e3")
 		(property "Ground" ""
-			(at 176.53 55.88 90)
+			(at 194.31 50.8 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5503,6 +5622,27 @@
 					(italic yes)
 				)
 				(justify right)
+			)
+		)
+	)
+	(label "GEN_BTN"
+		(at 186.69 111.76 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d8e90de8-b899-4d38-b6e3-f2858e8e7659")
+		(property "Ground" ""
+			(at 186.69 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
 			)
 		)
 	)
@@ -5696,7 +5836,7 @@
 		)
 	)
 	(label "3.3V"
-		(at 111.76 48.26 90)
+		(at 146.05 48.26 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5706,7 +5846,7 @@
 		)
 		(uuid "ef7bae92-db4f-4ba1-930a-a8554422c680")
 		(property "Ground" ""
-			(at 113.03 48.26 90)
+			(at 147.32 48.26 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5759,7 +5899,7 @@
 		)
 	)
 	(label "W_RX"
-		(at 107.95 44.45 270)
+		(at 142.24 44.45 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5769,7 +5909,7 @@
 		)
 		(uuid "f3c9d24c-3f79-41ac-ae9f-9d9434d66fa6")
 		(property "Ground" ""
-			(at 109.22 44.45 90)
+			(at 143.51 44.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5822,7 +5962,7 @@
 		)
 	)
 	(label "W_TX"
-		(at 104.14 44.45 270)
+		(at 138.43 44.45 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5832,7 +5972,7 @@
 		)
 		(uuid "f603bdd0-046d-4d9c-8189-9f097ea82dcd")
 		(property "Ground" ""
-			(at 105.41 44.45 90)
+			(at 139.7 44.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6053,7 +6193,7 @@
 		)
 	)
 	(label "GND"
-		(at 189.23 35.56 270)
+		(at 207.01 30.48 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6063,7 +6203,7 @@
 		)
 		(uuid "ffa9e043-78d0-43ec-b08d-8d1192794655")
 		(property "Ground" ""
-			(at 190.5 35.56 90)
+			(at 208.28 30.48 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6802,7 +6942,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 168.91 46.99 270)
+		(at 186.69 41.91 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6810,7 +6950,7 @@
 		(dnp no)
 		(uuid "30a71506-ba9c-4b44-8659-c9858708cd1e")
 		(property "Reference" "R7"
-			(at 168.91 40.64 90)
+			(at 186.69 35.56 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6818,7 +6958,7 @@
 			)
 		)
 		(property "Value" "4.7K"
-			(at 168.91 43.18 90)
+			(at 186.69 38.1 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6826,7 +6966,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder"
-			(at 168.656 48.006 90)
+			(at 186.436 42.926 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6835,7 +6975,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 168.91 46.99 0)
+			(at 186.69 41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6844,7 +6984,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 168.91 46.99 0)
+			(at 186.69 41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6862,6 +7002,76 @@
 			(project "Camera"
 				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
 					(reference "R7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 96.52 40.64 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "31bb0651-4654-4785-8845-0406eefe89c6")
+		(property "Reference" "R9"
+			(at 99.06 39.3699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10K"
+			(at 99.06 41.9099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric_Pad1.30x1.75mm_HandSolder"
+			(at 97.536 40.894 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 96.52 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 96.52 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "c25d010d-132a-426f-b234-1d45e8ad1250")
+		)
+		(pin "1"
+			(uuid "1502ef23-83d5-4e78-87c6-9d06eba710bc")
+		)
+		(instances
+			(project "Camera"
+				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
+					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -6930,6 +7140,74 @@
 			(project "Camera"
 				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
 					(reference "#PWR012")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GNDREF")
+		(at 123.19 36.83 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3a0e1d47-1137-4010-8148-44af40f734f2")
+		(property "Reference" "#PWR09"
+			(at 129.54 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GNDREF"
+			(at 127 36.8299 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 123.19 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 123.19 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GNDREF\" , reference supply ground"
+			(at 123.19 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "868d3b99-e557-463e-bc51-5085a5ca5f1e")
+		)
+		(instances
+			(project "Camera"
+				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -7211,7 +7489,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_BJT:S8050")
-		(at 175.26 39.37 90)
+		(at 193.04 34.29 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7220,7 +7498,7 @@
 		(fields_autoplaced yes)
 		(uuid "58c0fe43-0fda-4ca4-92ab-5dba08e265c7")
 		(property "Reference" "Q1"
-			(at 175.26 30.48 90)
+			(at 193.04 25.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7228,7 +7506,7 @@
 			)
 		)
 		(property "Value" "S8050"
-			(at 175.26 33.02 90)
+			(at 193.04 27.94 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7236,7 +7514,7 @@
 			)
 		)
 		(property "Footprint" "Camera_Components:transistor"
-			(at 177.165 34.29 0)
+			(at 194.945 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7247,7 +7525,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.unisonic.com.tw/datasheet/S8050.pdf"
-			(at 175.26 39.37 0)
+			(at 193.04 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7257,7 +7535,7 @@
 			)
 		)
 		(property "Description" "0.7A Ic, 20V Vce, Low Voltage High Current NPN Transistor, TO-92"
-			(at 175.26 39.37 0)
+			(at 193.04 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7414,6 +7692,74 @@
 			(project "Camera"
 				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
 					(reference "#PWR04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Switch:SW_Push")
+		(at 109.22 36.83 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "65143641-8444-44fd-8249-c1a26ae191e5")
+		(property "Reference" "GEN1"
+			(at 109.22 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SW_Push"
+			(at 109.22 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Camera_Components:6x6x4.3 SMD button"
+			(at 109.22 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 109.22 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Push button switch, generic, two pins"
+			(at 109.22 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "aa610a28-3126-4529-b8ae-dabd86c87197")
+		)
+		(pin "1"
+			(uuid "985b0afc-1b4b-445a-80c3-c4ef3bbe85a3")
+		)
+		(instances
+			(project "Camera"
+				(path "/bd805688-9027-4bca-b554-c3e16d62edc0"
+					(reference "GEN1")
 					(unit 1)
 				)
 			)
@@ -7981,7 +8327,7 @@
 	)
 	(symbol
 		(lib_id "Camera_Components:Vibration_Motor")
-		(at 182.88 30.48 0)
+		(at 200.66 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7989,7 +8335,7 @@
 		(dnp no)
 		(uuid "99100d5f-8db3-46f1-91b3-1d7547356cc9")
 		(property "Reference" "U7"
-			(at 179.832 27.178 0)
+			(at 197.612 22.098 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7998,7 +8344,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 195.58 28.0642 0)
+			(at 213.36 22.9842 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8007,7 +8353,7 @@
 			)
 		)
 		(property "Footprint" "Camera_Components:vibration motor"
-			(at 182.88 30.48 0)
+			(at 200.66 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8016,7 +8362,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 182.88 30.48 0)
+			(at 200.66 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8025,7 +8371,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 182.88 30.48 0)
+			(at 200.66 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8186,7 +8532,7 @@
 	)
 	(symbol
 		(lib_id "Camera_Components:Flash_Interface")
-		(at 96.52 25.4 270)
+		(at 130.81 25.4 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8195,7 +8541,7 @@
 		(fields_autoplaced yes)
 		(uuid "bf6d84f1-5ad9-4c83-9955-bea45cee5197")
 		(property "Reference" "U1"
-			(at 123.19 31.7471 90)
+			(at 157.48 31.7471 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8204,7 +8550,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 123.19 33.6522 90)
+			(at 157.48 33.6522 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8213,7 +8559,7 @@
 			)
 		)
 		(property "Footprint" "Camera_Components:Flash_Interface"
-			(at 96.52 25.4 0)
+			(at 130.81 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8222,7 +8568,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 96.52 25.4 0)
+			(at 130.81 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8231,7 +8577,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 96.52 25.4 0)
+			(at 130.81 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
