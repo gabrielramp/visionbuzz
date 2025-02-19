@@ -39,6 +39,47 @@
 		(58 "User.9" user)
 	)
 	(setup
+		(stackup
+			(layer "F.SilkS"
+				(type "Top Silk Screen")
+			)
+			(layer "F.Paste"
+				(type "Top Solder Paste")
+			)
+			(layer "F.Mask"
+				(type "Top Solder Mask")
+				(color "Blue")
+				(thickness 0.01)
+			)
+			(layer "F.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "dielectric 1"
+				(type "core")
+				(thickness 1.51)
+				(material "FR4")
+				(epsilon_r 4.5)
+				(loss_tangent 0.02)
+			)
+			(layer "B.Cu"
+				(type "copper")
+				(thickness 0.035)
+			)
+			(layer "B.Mask"
+				(type "Bottom Solder Mask")
+				(color "Blue")
+				(thickness 0.01)
+			)
+			(layer "B.Paste"
+				(type "Bottom Solder Paste")
+			)
+			(layer "B.SilkS"
+				(type "Bottom Silk Screen")
+			)
+			(copper_finish "None")
+			(dielectric_constraints no)
+		)
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
 		(pcbplotparams
@@ -71,12 +112,12 @@
 			(plotfptext yes)
 			(plotinvisibletext no)
 			(sketchpadsonfab no)
-			(subtractmaskfromsilk no)
+			(subtractmaskfromsilk yes)
 			(outputformat 1)
 			(mirror no)
-			(drillshape 1)
+			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "")
+			(outputdirectory "C:/SD/visionbuzz/PCB/Camera/gerber/")
 		)
 	)
 	(net 0 "")
@@ -7038,14 +7079,14 @@
 		(layer "Edge.Cuts")
 		(uuid "de282710-a621-4ddd-97b1-3c8ce8a33dac")
 	)
-	(gr_text "W_RX"
-		(at 182.245 37.846 180)
+	(gr_text "WRX"
+		(at 180.975 37.846 180)
 		(layer "F.SilkS")
 		(uuid "17ea9456-6155-46e0-8eac-c51fd0411ad0")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
@@ -7055,63 +7096,63 @@
 		(uuid "1b8351ff-b0c1-4044-a50f-de091f3c347c")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
-	(gr_text "B_RX"
-		(at 192.405 37.846 180)
+	(gr_text "BRX"
+		(at 193.675 37.846 180)
 		(layer "F.SilkS")
 		(uuid "1fac07e0-258b-432a-8e1a-685b330f19f0")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
-	(gr_text "W_TX"
-		(at 179.705 37.846 180)
+	(gr_text "WTX"
+		(at 177.165 39.37 180)
 		(layer "F.SilkS")
 		(uuid "6f568d16-811d-4a95-b870-9376f69df1e6")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
-	(gr_text "3.3V"
-		(at 184.785 37.846 180)
+	(gr_text "3V3"
+		(at 184.15 37.846 180)
 		(layer "F.SilkS")
 		(uuid "6fd4cbc8-fd28-4014-8ebe-df0127a945a1")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
-	(gr_text "B_TX"
-		(at 194.945 37.846 180)
+	(gr_text "BTX"
+		(at 197.485 39.37 180)
 		(layer "F.SilkS")
 		(uuid "822665f1-dcc8-48c7-8e98-cfc9035ef044")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
 	(gr_text "NC"
-		(at 189.865 37.846 180)
+		(at 190.5 37.846 180)
 		(layer "F.SilkS")
 		(uuid "9a02d5aa-5deb-473b-9586-c9efd69affa2")
 		(effects
 			(font
-				(size 0.508 0.508)
-				(thickness 0.0762)
+				(size 0.8128 0.8128)
+				(thickness 0.08128)
 			)
 		)
 	)
@@ -9789,59 +9830,59 @@
 	)
 	(segment
 		(start 200.5 40.5)
+		(end 196.075 40.5)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 83)
+		(uuid "2c0c7a68-68f9-44b1-abb8-d463f26c9c02")
+	)
+	(segment
+		(start 196.075 40.5)
+		(end 194.945 39.37)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 83)
+		(uuid "47f97017-5151-4ae3-8729-7e30cbc04c1a")
+	)
+	(segment
+		(start 201.295 42.05)
 		(end 201.295 41.295)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 83)
-		(uuid "212f95e4-3377-4679-a387-6639a40347d5")
+		(uuid "c971ba36-b03c-4e14-8cc7-7cda4f1edfe5")
 	)
 	(segment
 		(start 201.295 41.295)
-		(end 201.295 42.05)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 83)
-		(uuid "744b1f94-d1a5-41ae-b847-f030bdef3e6f")
-	)
-	(segment
-		(start 196.945 40.5)
 		(end 200.5 40.5)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 83)
-		(uuid "78acbaef-ca99-434f-81c3-6718bebe1fd7")
+		(uuid "faee39d1-3812-4f3c-8525-6e4700ba5720")
 	)
 	(segment
-		(start 194.945 38.5)
-		(end 196.945 40.5)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 83)
-		(uuid "faa787e6-738f-4d0b-81b4-9ddb37e57490")
-	)
-	(segment
-		(start 192.405 38.5)
-		(end 194.905 41)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 84)
-		(uuid "057db0ed-6836-486f-924b-1dcc8c9b85f8")
-	)
-	(segment
-		(start 199.5 41)
-		(end 200.025 41.525)
-		(width 0.2)
-		(layer "B.Cu")
-		(net 84)
-		(uuid "a80406d2-978b-4fae-9cea-7a36f26e4f9b")
-	)
-	(segment
-		(start 194.905 41)
+		(start 200.025 41.525)
 		(end 199.5 41)
 		(width 0.2)
 		(layer "B.Cu")
 		(net 84)
-		(uuid "e7c7015e-05d4-4123-99c7-1925636c8341")
+		(uuid "44a16b96-fae4-428e-a4dc-e1fbe03dd1e8")
+	)
+	(segment
+		(start 194.035 41)
+		(end 192.405 39.37)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 84)
+		(uuid "a40094fd-d055-4cc7-ad0d-3e1d9982e52f")
+	)
+	(segment
+		(start 199.5 41)
+		(end 194.035 41)
+		(width 0.2)
+		(layer "B.Cu")
+		(net 84)
+		(uuid "d6c6fa6f-9f06-47d2-9552-3995ec947041")
 	)
 	(segment
 		(start 180.975 44.975)
