@@ -1,23 +1,17 @@
 import numpy as np
-import dlib
-
+from dataclasses import dataclass
+from deepface import DeepFace
 
 class FaceService:
     def __init__(self, config):
-        self.detector = dlib.get_frontal_face_detector()
-        self.sp = dlib.shape_predictor(config.SHAPE_PREDICTOR_PATH)
-        self.facerec = dlib.face_recognition_model_v1(config.FACE_REC_MODEL_PATH)
+        self.detector = YuNetMultiViewAligner(
+            model_path=config.YUNET_PATH,
+            desired_size=160,
+            confidence_threshold=0.9,
+            nms_threshold=0.3,
+            top_k=5000
+        )
 
-    # TODO: This only works well for frontal face views. Replace with multi-view alignment approach
-    def get_aligned_faces(self, rgb_frame, face_shapes):
-        """
-        Realigns faces based on information in face_shapes, returns cropped face
-        """
-        # Convert list of face_shapes to full_object_detections object
-        faces = dlib.full_object_detections(face_shapes)
-        return dlib.get_face_chips(rgb_frame, faces)
-
-    # TODO: Replace detector with YuNet (dlib detector isnt great)
     def get_faces(self, rgb_frame):
         """
         Detects faces in frame, returns cropped re-aligned images of faces
@@ -26,21 +20,24 @@ class FaceService:
         if len(faces) == 0:
             return []
 
-        # Get face shapes for all detected faces
-        face_shapes = [self.sp(rgb_frame, face) for face in faces]
-        return self.get_aligned_faces(rgb_frame, face_shapes)
-
     # TODO: Should we make this a queue or something to avoid overloading the server?
-    # TODO: Should we add batching? (if host has GPU)
-    def get_face_embeds(self, rgb_frame):
+    # TODO: Set up batching if we move to GPU host 
+    def get_face_embeds(self, img):
         """
         From frame, return list of embeddings of faces
         """
-        faces = self.get_faces(rgb_frame)
+        if img.dtype != np.uint8:
+            img = (img * 255).astype(np.uint8)
+
+        faces = self.get_faces(img)
         embedding_list = []
 
         for face in faces:
-            embedding = self.facerec.compute_face_descriptor(face)
+            embedding = DeepFace.represent(aligned_face, model_name="ArcFace",
+                                           enforce_detection=False, align=False,
+                                           detector_backend="skip")[0]['embedding']
             embedding_list.append(np.array(embedding))
 
         return embedding_list
+
+

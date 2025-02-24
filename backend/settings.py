@@ -16,32 +16,24 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-    # TODO: Implement
     # TODO: In the future, maybe let user set
     NOTIF_COOLDOWN = timedelta(minutes=1)
     TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
 
     # DBSCAN HYPERPARAMETESR
-    # JOSE TODO: YOUC AN CHANGE THESE IF YOU WANT
-    CLUSTER_RADIUS = 0.3
-    CLUSTER_POINTS = 3
-
-    # JOSE TODO: Figure out to tune with how often we're taking images
-    MINIMUM_CLUSTER_SIZE = 10
+    CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.87"))
+    CLUSTER_POINTS = int(os.getenv("CLUSTER_POINTS", "3"))
+    MINIMUM_CLUSTER_SIZE = int(os.getenv("MINIMUM_CLUSTER_SIZE", "10")) # minimum points before we allow registration
 
     # Database Settings
     DB_NAME = os.getenv("DB_NAME", "vision_draft")
     SCHEMA_PATH = os.getenv("SCHEMA_PATH", "db.sql")
 
     # Face Recognition Settings
-    SHAPE_PREDICTOR_PATH = os.getenv(
-        "SHAPE_PREDICTOR_PATH", "shape_predictor_68_face_landmarks.dat"
-    )
-    FACE_REC_MODEL_PATH = os.getenv(
-        "FACE_REC_MODEL_PATH", "dlib_face_recognition_resnet_model_v1.dat"
-    )
+    YUNET_PATH = os.getenv("YUNET_PATH", "face_detection_yunet_2023mar.onnx")
+
     FACE_DATA_PATH = os.getenv("FACE_DATA_PATH", "facialdata")
-    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.6"))
+    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.906"))
 
 
 class DevelopmentConfig(Config):
