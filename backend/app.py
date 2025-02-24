@@ -25,8 +25,10 @@ app = Flask(__name__)
 CORS(app)
 # FLASK SETUP
 config = get_config()
+print(f"{config.CLUSTER_RADIUS=}")
 app.config.from_object(config)
 jwt = JWTManager(app)
+
 
 cluster_service = ClusterService(config)
 database_service = DatabaseService(config)
@@ -133,6 +135,7 @@ def upload_image():
         closest_match = database_service.pull_closest_contact(user_id, embed.tolist())
         if not closest_match:
             # For all unknown, add to loose embeds
+            print("found face in frame that isn't a contact")
             database_service.add_loose_embedding(user_id, embed.tolist())
             continue
 
@@ -141,8 +144,8 @@ def upload_image():
 
         time_since_last_seen = datetime.now().astimezone() - closest_match["last_seen"]
         # print(time_since_last_seen)
+        print(f"hi, should send notif for {closest_match['name']}")
         if user_fb_token is not None and time_since_last_seen > config.NOTIF_COOLDOWN:
-            # print(f"hi, should send notif for {closest_match['name']}")
             # Notify with cloudflare
             msg = messaging.Message(
                 notification=messaging.Notification(

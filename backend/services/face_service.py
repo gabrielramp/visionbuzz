@@ -1,6 +1,8 @@
 import numpy as np
 from dataclasses import dataclass
 from deepface import DeepFace
+from .face_alignment import *
+
 
 class FaceService:
     def __init__(self, config):
@@ -9,19 +11,21 @@ class FaceService:
             desired_size=160,
             confidence_threshold=0.9,
             nms_threshold=0.3,
-            top_k=5000
+            top_k=5000,
         )
 
     def get_faces(self, rgb_frame):
         """
         Detects faces in frame, returns cropped re-aligned images of faces
         """
-        faces = self.detector(rgb_frame, 0)
-        if len(faces) == 0:
+        faces = self.detector.detect_and_align(rgb_frame)
+        if faces is None or len(faces) == 0:
             return []
 
+        return faces
+
     # TODO: Should we make this a queue or something to avoid overloading the server?
-    # TODO: Set up batching if we move to GPU host 
+    # TODO: Set up batching if we move to GPU host
     def get_face_embeds(self, img):
         """
         From frame, return list of embeddings of faces
@@ -33,11 +37,14 @@ class FaceService:
         embedding_list = []
 
         for face in faces:
-            embedding = DeepFace.represent(aligned_face, model_name="ArcFace",
-                                           enforce_detection=False, align=False,
-                                           detector_backend="skip")[0]['embedding']
+            embedding = DeepFace.represent(
+                face.aligned_face,
+                model_name="ArcFace",
+                enforce_detection=False,
+                align=False,
+                detector_backend="skip",
+            )[0]["embedding"]
+            embedding /= np.linalg.norm(embedding)
             embedding_list.append(np.array(embedding))
 
         return embedding_list
-
-
