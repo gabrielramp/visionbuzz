@@ -16,14 +16,15 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
-    # TODO: In the future, maybe let user set
     NOTIF_COOLDOWN = timedelta(minutes=1)
     TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
 
     # DBSCAN HYPERPARAMETESR
     CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.87"))
     CLUSTER_POINTS = int(os.getenv("CLUSTER_POINTS", "3"))
-    MINIMUM_CLUSTER_SIZE = int(os.getenv("MINIMUM_CLUSTER_SIZE", "10")) # minimum points before we allow registration
+    MINIMUM_CLUSTER_SIZE = int(
+        os.getenv("MINIMUM_CLUSTER_SIZE", "10")
+    )  # minimum points before we allow registration
 
     # Database Settings
     DB_NAME = os.getenv("DB_NAME", "vision_draft")
@@ -32,8 +33,7 @@ class Config:
     # Face Recognition Settings
     YUNET_PATH = os.getenv("YUNET_PATH", "face_detection_yunet_2023mar.onnx")
 
-    FACE_DATA_PATH = os.getenv("FACE_DATA_PATH", "facialdata")
-    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.906"))
+    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.994"))
 
 
 class DevelopmentConfig(Config):

@@ -112,7 +112,26 @@ class DatabaseService:
 
                 return uid
 
-    # TODO: Take in firebase_token
+    def get_firebase_token(self, uid: str) -> int:
+        """
+        Returns firebase_token of username
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT firebase_token 
+                    FROM users
+                    WHERE uid = %s;
+                    """,
+                    (uid,),
+                )
+
+                res = cur.fetchone()
+                firebase_token = res[0]
+
+                return firebase_token
+
     def create_user(self, username: str, pwd: str, firebase_token: str) -> int:
         """
         Returns UID?

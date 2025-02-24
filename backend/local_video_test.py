@@ -26,10 +26,14 @@ import warnings
 warnings.filterwarnings("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 
+# Server configuration
+SERVER_URL = "http://127.0.0.1:5000"  # Local server
+# SERVER_URL = "http://159.223.99.186"  # Online server
+
 
 def authenticate_with_test_user():
     response = requests.post(
-        "http://127.0.0.1:5000/api/v1/login",
+        f"{SERVER_URL}/api/v1/login",
         json={"username": "test6", "password": "test6"},
     )
     if response.status_code != 200:
@@ -77,7 +81,7 @@ def add_contact_for_cluster(cluster_id, access_token):
     contact_name = input(f"Enter name for cluster {cluster_id}: ")
 
     response = requests.post(
-        "http://127.0.0.1:5000/api/v1/create_contact",
+        f"{SERVER_URL}/api/v1/create_contact",
         headers={"Authorization": f"Bearer {access_token}"},
         json={"cluster_id": cluster_id, "contact_name": contact_name},
     )
@@ -107,9 +111,9 @@ try:
         # Display the original frame
         cv2.imshow("Video Test", frame)
 
-        # Upload every 0.5 seconds
+        # Upload every 1.0 seconds
         current_time = time.time()
-        if current_time - last_upload_time >= 0.5:
+        if current_time - last_upload_time >= 1.0:
             last_upload_time = current_time
 
             try:
@@ -122,7 +126,7 @@ try:
 
                 # Send request to server
                 response = requests.post(
-                    "http://127.0.0.1:5000/api/v1/upload_image",
+                    f"{SERVER_URL}/api/v1/upload_image",
                     data=img_byte_arr,
                     headers={
                         "Content-Type": "application/octet-stream",
@@ -149,7 +153,7 @@ try:
         if key == ord("c"):
             # Cluster loose embeddings
             response = requests.get(
-                "http://127.0.0.1:5000/api/v1/pull_timeline",
+                f"{SERVER_URL}/api/v1/pull_timeline",
                 headers={"Authorization": f"Bearer {access_token}"},
             )
             clusters = response.json()
