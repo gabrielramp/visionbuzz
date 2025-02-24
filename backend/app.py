@@ -56,7 +56,7 @@ def login():
 def register():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
-    firebase_token = request.json.get("firebaes_token", None)
+    firebase_token = request.json.get("firebase_token", None)
 
     if database_service.check_user_taken(username):
         return jsonify({"msg": "Username already taken"}), 401
