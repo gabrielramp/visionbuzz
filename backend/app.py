@@ -42,6 +42,9 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
 
+    if not database_service.check_user_taken(username):
+        return jsonify({"msg": "Username unregistered"}), 401
+
     enc_password = database_service.get_pwd_hash(username)
     if not password_service.verify_password(password, enc_password):
         return jsonify({"msg": "Bad username or password"}), 401
