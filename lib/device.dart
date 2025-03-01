@@ -11,9 +11,9 @@ class DevicePage extends StatelessWidget {
   final WIFI_IDENTITY_UUID = "0301f0de-bc9a-7856-3412-004200000069";
   final WIFI_PASSWORD_UUID = "0401f0de-bc9a-7856-3412-004200000069";
   final WIFI_CONNECT_UUID = "0501f0de-bc9a-7856-3412-004200000069";
-
+  final ValueNotifier<bool> _isDeviceConnected = ValueNotifier<bool>(false);
   final DEVICE_NAME = "August Device";
-  const DevicePage({super.key});
+  DevicePage({super.key});
 
   void ScanForBluetoothDevices() async {
     print("Scanning For Bluetooth Devices");
@@ -30,6 +30,7 @@ class DevicePage extends StatelessWidget {
         // print(results);
         for (ScanResult r in results) {
           if (r.device.name == "August Device") {
+            _isDeviceConnected.value = true;
             print("Found August Device");
             device = r.device;
             connectToDevice(device);
@@ -128,56 +129,175 @@ class DevicePage extends StatelessWidget {
   //   }
   // }
 
+  Widget deviceDisconnectedBox(BuildContext context) {
+    ThemeData themey = Theme.of(context);
+    ColorScheme colorScheme = themey.colorScheme;
+    TextTheme textTheme = themey.textTheme;
+    return (Container(
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 40),
+        // height: 10000,
+        // width: 10000,
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          color: Colors.grey,
+        ),
+        child: CustomPaint(
+            size: Size(400, 200.toDouble()),
+            painter: CornerBorderPainter(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                    child: FractionallySizedBox(
+                        heightFactor: 0.35,
+                        widthFactor: 1,
+                        child: Container(
+                          // color: none,
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 70),
+                              child: Text(
+                                "No Device Connected",
+                                style: textTheme.titleMedium,
+                              )),
+                        ))),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScanForBluetoothDevices();
+                    },
+                    child: const Text('Pair a Device'),
+                  ),
+                )
+              ],
+            ))));
+  }
+
+  final _formKey = GlobalKey<FormState>();
+  var wifiUsername ="";
+  var wifiPassword ="";
+
+  Widget deviceConnectedBox(BuildContext context) {
+    ThemeData themey = Theme.of(context);
+    ColorScheme colorScheme = themey.colorScheme;
+    TextTheme textTheme = themey.textTheme;
+    return (Container(
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 40),
+        // height: 10000,
+        // width: 10000,
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          color: Colors.white,
+        ),
+        child: CustomPaint(
+            size: Size(400, 200.toDouble()),
+            painter: CornerBorderPainter(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                    child: FractionallySizedBox(
+                        heightFactor: 0.35,
+                        widthFactor: 1,
+                        child: Container(
+                          // color: none,
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 70),
+                              child: Text(
+                                "Device Connected!",
+                                style: textTheme.titleMedium,
+                              )),
+                        ))),
+                Form(
+                  key: _formKey,
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 50.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          TextFormField(
+                            decoration: const InputDecoration(
+                              hintText: 'Wifi Username',
+                            ),
+                            onSaved: (value) {
+                              wifiUsername = value ?? '';
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter some text';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            decoration: const InputDecoration(
+                              hintText: 'Wifi Password',
+                            ),
+                            onSaved: (value) {
+                              wifiPassword = value ?? '';
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter some text';
+                              }
+                              return null;
+                            },
+                          ),
+                          Center(child:Padding(
+                            padding: const EdgeInsets.symmetric(vertical:20),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _formKey.currentState?.save();
+                                // if (this.header == "Register") {
+                                //   register(username, pwd);
+                                //   print("Pushed da register button");
+                                // } else {
+                                //   login(username, pwd);
+                                //   print("Pushed da login button");
+                                // }
+                                // print("Username: $username, Password:$pwd");
+                              },
+                              child: const Text('Submit'),
+                            ),
+                          ),)
+                        ],
+                      )),
+                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       ScanForBluetoothDevices();
+                //     },
+                //     child: const Text('Pair a Device'),
+                //   ),
+                // )
+              ],
+            ))));
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
-
     return Scaffold(
         appBar: AppBar(
           title: const Text('Device Pairing'),
         ),
         body: Center(
-          child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 60, vertical: 80),
-              height: 10000,
-              width: 10000,
-              decoration: ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                color: Colors.grey,
-              ),
-              child: CustomPaint(
-                  size: Size(400, 200.toDouble()),
-                  painter: CornerBorderPainter(),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                          child: FractionallySizedBox(
-                              heightFactor: 0.5,
-                              widthFactor: 1,
-                              child: Container(
-                                // color: none,
-                                child: Center(
-                                    child: Text(
-                                  "No Device Connected",
-                                  style: textTheme.titleMedium,
-                                )),
-                              ))),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ScanForBluetoothDevices();
-                          },
-                          child: const Text('Pair a Device'),
-                        ),
-                      )
-                    ],
-                  ))),
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _isDeviceConnected,
+            builder: (context, isFirst, child) {
+              return _isDeviceConnected.value
+                  ? deviceConnectedBox(context)
+                  : deviceDisconnectedBox(context);
+            },
+          ),
           // child: ElevatedButton(
           //   onPressed: () {
           //     ScanForBluetoothDevices();

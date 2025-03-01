@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 import 'contacts.dart' as contactsWidget;
 import 'upload.dart' as uploadWidget;
@@ -10,6 +12,8 @@ import 'settings.dart' as settingsWidget;
 import 'home.dart' as homeWidget;
 import 'main.dart' as mainPage;
 import 'themes.dart' as themes;
+import 'package:provider/provider.dart';
+import 'auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +28,12 @@ void main() async {
 
   // Get the device token
   String? token = await messaging.getToken();
+  final FlutterSecureStorage keyStore = const FlutterSecureStorage();
+  // keyStore.write(
+  //     key: DateTime.timestamp().microsecondsSinceEpoch.toString(),
+  //     value: "Kill Me");
   print("Firebase device token: $token");
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create: (_) => AuthProvider(), child: MyApp()));
 }
 
 const double iconSize = 40;
@@ -49,7 +57,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: themes.Themes.main,
       home: DefaultTabController(
-        initialIndex: 3,
+        initialIndex: 2,
         length: 5,
         child: const MyHomePage(title: 'VisionBuzz'),
       ),

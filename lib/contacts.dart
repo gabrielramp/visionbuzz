@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
 import 'themes.dart' as themes;
 import 'dart:math';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'auth_provider.dart';
+import 'auth_service.dart';
+//stupidmanthing
+//imfuckingballing
 class ContactsPage extends StatelessWidget {
   ContactsPage({super.key});
+  var authService;
+  var authProvider;
+  
+  Future<http.Response> getContacts() {
+    return http.get(Uri.parse('http://159.223.99.186/api/v1/pull_contacts'));
+  }
 
   final List<String> letterHeads = <String>[
     'A',
@@ -35,11 +47,15 @@ class ContactsPage extends StatelessWidget {
     '?'
   ];
 
-  final String customizableLeadingString = "Whatever you want really";
+  final String customizableLeadingString = "What";
   final int maxContacts = 10;
 
   @override
   Widget build(BuildContext context) {
+    authProvider = Provider.of<AuthProvider>(context);
+    if(authProvider.isLoggedIn){
+      print(getContacts());
+    }
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     return Scaffold(
@@ -89,12 +105,12 @@ class ContactsPage extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return ListView.separated(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(8),
       itemCount: contactsInSection,
       itemBuilder: (BuildContext context, int index) {
         return contactRow(context,
-            "${startsWith} Contact #${index + 1} / ${customizableLeadingString}");
+            "$startsWith Contact #${index + 1} / $customizableLeadingString");
       },
       separatorBuilder: (BuildContext context, int index) => Divider(
         color: colorScheme.primary,
@@ -106,7 +122,7 @@ class ContactsPage extends StatelessWidget {
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
-    return Container(
+    return SizedBox(
         // color: Colors.red,
         height: 100,
         // width: MediaQuery.of(context).size.width,
@@ -119,13 +135,13 @@ class ContactsPage extends StatelessWidget {
               children: [
                 Container(
                     height: 75,
-                    margin: EdgeInsets.only(right:20),
-                    decoration: BoxDecoration(
+                    margin: const EdgeInsets.only(right:20),
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey,
                     ),
                     child: Container(
-                      padding:EdgeInsets.symmetric(horizontal: 10),
+                      padding:const EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(
                       Icons.person,
                       size: 70,

@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:visionbuzz/auth_provider.dart';
 import 'themes.dart' as themer;
 import 'package:settings_ui/settings_ui.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
+import 'auth_provider.dart';
 
 class SettingsPage extends StatelessWidget {
   SettingsPage({super.key});
+  var authProvider;
 
   final List<String> settingsHeaders = <String>[
     'Login & Registration',
     'Account',
+    'Logout',
     ''
   ];
 
   Future<http.Response> makeGetCall() {
     return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
   }
+  // 401 = Username taken
+  // 200 = hunky dory
 
   final List<int> sectionLengths = <int>[2, 2, 0];
 
   @override
   Widget build(BuildContext context) {
+    authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -58,6 +68,17 @@ class SettingsPage extends StatelessWidget {
                         builder: (context) => AccountScreen(header: "Register"),
                       ),
                     );
+                  },
+                  // value: Text('English'),
+                ),
+                SettingsTile.navigation(
+                  leading: Icon(Icons.logout),
+                  title: Text('Logout'),
+                  onPressed: (context) {
+                    // Custom onPressed action
+                    print("Logged Out");
+
+                    authProvider.logout();
                   },
                   // value: Text('English'),
                 ),
@@ -155,6 +176,7 @@ final _formKey = GlobalKey<FormState>();
 
 class AccountScreen extends StatelessWidget {
   final String header;
+  var authProvider;
 
   void register(String username, String password) async {
     final response = await http.post(
@@ -166,7 +188,37 @@ class AccountScreen extends StatelessWidget {
           <String, String>{'username': username, 'password': password}),
     );
     if (response.statusCode == 200) {
-      print(response.body);
+      // print(response.body);
+      print("REGISTER PASS");
+      var accessToken = jsonDecode(response.body)['access_token'];
+      print("Specifically access token = " + accessToken);
+      authProvider.login(accessToken);
+    } else if (response.statusCode == 401) {
+      print("Username taken");
+    } else {
+      print("Something went wrong");
+    }
+  }
+
+  void login(String username, String password) async {
+    final response = await http.post(
+      Uri.parse('http://159.223.99.186/api/v1/login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(
+          <String, String>{'username': username, 'password': password}),
+    );
+    if (response.statusCode == 200) {
+      // print(response.body);
+      print("Login PASS");
+      var accessToken = jsonDecode(response.body)['access_token'];
+      print("Specifically access token = " + accessToken);
+      authProvider.login(accessToken);
+    } else if (response.statusCode == 401) {
+      print("Bad login info");
+    } else {
+      print("Something unforeseen went wrong");
     }
   }
 
@@ -175,60 +227,72 @@ class AccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     String username = "";
     String pwd = "";
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(header),
-          centerTitle: false,
-        ),
-        body: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                decoration: const InputDecoration(
-                  hintText: 'Enter your username',
-                ),
-                onSaved: (value) {
-                  username = value ?? '';
-                },
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  hintText: 'Enter your password',
-                ),
-                onSaved: (value) {
-                  pwd = value ?? '';
-                },
-                validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    _formKey.currentState?.save();
-                    if (this.header == "Register") {
-                      register(username, pwd);
-                    }
-                    // print("Username: $username, Password:$pwd");
-                  },
-                  child: const Text('Submit'),
-                ),
-              ),
-            ],
-          ),
-        ));
+    this.authProvider = Provider.of<AuthProvider>(context);
+    return GestureDetector(
+        onTap: () {
+          // print("Fook");
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text(header),
+              centerTitle: false,
+            ),
+            body: Form(
+              key: _formKey,
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 50.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: 'Enter your username',
+                        ),
+                        onSaved: (value) {
+                          username = value ?? '';
+                        },
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: 'Enter your password',
+                        ),
+                        onSaved: (value) {
+                          pwd = value ?? '';
+                        },
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          }
+                          return null;
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _formKey.currentState?.save();
+                            if (this.header == "Register") {
+                              register(username, pwd);
+                              print("Pushed da register button");
+                            } else {
+                              login(username, pwd);
+                              print("Pushed da login button");
+                            }
+                            // print("Username: $username, Password:$pwd");
+                          },
+                          child: const Text('Submit'),
+                        ),
+                      ),
+                    ],
+                  )),
+            )));
   }
 }
 
