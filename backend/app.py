@@ -276,6 +276,8 @@ def pull_timeline():
     # TODO: MOVE THIS TO DB SERVICE
     embeds = [ast.literal_eval(embed_str) for embed_str in temp_embeds]
     embeds_array = np.array(embeds)
+    if embeds_array.size == 0:
+        return {}
     cluster_ids = cluster_service.get_clusters(embeds_array)
     database_service.save_cluster_ids(user_id, cluster_ids.tolist())
 
