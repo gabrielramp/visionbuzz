@@ -214,11 +214,22 @@ class DatabaseService:
                     (uid,),
                 )
 
-                cur.fetchall()
-                print(cur)
-                cid = cur
-
-                return cid
+                contacts = cur.fetchall()
+                return [
+                    {
+                        "cid": contact[0],
+                        "name": contact[2],
+                        "last_seen": contact[-1],
+                        "vib_pattern": contact[3],
+                    }
+                    for contact in contacts
+                ]
+                # 0 cid         serial PRIMARY KEY,
+                # 1 uid         integer REFERENCES users(uid) ON DELETE CASCADE ,
+                # 2 name        varchar NOT NULL,
+                # 3 vib_pattern integer,           -- TODO: design how this works!
+                # 4 embedding   vector(512) NOT NULL,
+                # 5 last_seen   timestamptz NOT NULL
 
     def delete_contact(self, uid: int, cid: int):
         """
