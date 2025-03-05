@@ -2,6 +2,9 @@ import numpy as np
 from dataclasses import dataclass
 from deepface import DeepFace
 from .face_alignment import *
+import time
+import onnx
+import onnxruntime as ort
 
 
 class FaceService:
@@ -20,17 +23,16 @@ class FaceService:
             options.intra_op_num_threads = 2  # Match CPU cores
             options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
 
-            model = ort.InferenceSession(
+            self.model = ort.InferenceSession(
                 config.ARCFACE_INT8_PATH,
-                providers=['CPUExecutionProvider']
-                sess_options=options
+                providers=["CPUExecutionProvider"],
+                sess_options=options,
             )
-        else: 
-            arcface_ort = ort.InferenceSession(
+        else:
+            self.model = ort.InferenceSession(
                 config.ARCFACE_PATH,
-                providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+                providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
             )
-
 
     def get_faces(self, rgb_frame):
         """
@@ -59,17 +61,17 @@ class FaceService:
         embedding_list = []
 
         for face in faces:
+            aligned_face = face.aligned_face
             img_processed = aligned_face.astype(np.float32)
             img_processed = np.expand_dims(img_processed, axis=0)
             img_processed = np.transpose(img_processed, (0, 3, 1, 2))
 
-            input_name = model.get_inputs()[0].name
-            output_name = model.get_outputs()[0].name
+            input_name = self.model.get_inputs()[0].name
+            output_name = self.model.get_outputs()[0].name
 
-            embedding = model.run([output_name], {input_name: img_processed})[0]
+            embedding = self.model.run([output_name], {input_name: img_processed})[0]
             embedding = embedding.flatten()
             embedding /= np.linalg.norm(embedding)
             embedding_list.append(np.array(embedding))
 
         return embedding_list
-
