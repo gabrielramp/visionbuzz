@@ -6,7 +6,9 @@ from sklearn.cluster import DBSCAN
 class ClusterService:
     def __init__(self, config):
         self.dbscan = DBSCAN(
-            eps=config.CLUSTER_RADIUS, min_samples=config.CLUSTER_POINTS
+            eps=config.CLUSTER_RADIUS, 
+            min_samples=config.CLUSTER_POINTS,
+            metric='cosine'
         )  # set params
 
     def get_clusters(self, embeds: np.array) -> np.array:

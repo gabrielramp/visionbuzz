@@ -20,7 +20,7 @@ class Config:
     TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
 
     # DBSCAN HYPERPARAMETESR
-    CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.87"))
+    CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.483"))
     CLUSTER_POINTS = int(os.getenv("CLUSTER_POINTS", "3"))
     MINIMUM_CLUSTER_SIZE = int(
         os.getenv("MINIMUM_CLUSTER_SIZE", "10")
@@ -31,9 +31,15 @@ class Config:
     SCHEMA_PATH = os.getenv("SCHEMA_PATH", "db.sql")
 
     # Face Recognition Settings
-    YUNET_PATH = os.getenv("YUNET_PATH", "face_detection_yunet_2023mar.onnx")
+    USE_QUANTIZED = bool(os.getenv("USE_QUANTIZED", "true"))
 
-    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.994"))
+    YUNET_PATH = os.getenv("YUNET_PATH", "../models/face_detection_yunet_2023mar.onnx")
+    ARCFACE_PATH = os.getenv("ARCFACE_PATH", "../models/arcface_full.onnx")
+    ARCFACE_INT8_PATH = os.getenv("ARCFACE_INT8_PATH", "../models/arcface_int8.onnx")
+
+    
+
+    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.483"))
 
 
 class DevelopmentConfig(Config):

@@ -477,8 +477,8 @@ class DatabaseService:
                     """
                     SELECT *
                     FROM contacts
-                    WHERE uid = %s AND (embedding <-> %s < %s)
-                    ORDER BY embedding <-> %s
+                    WHERE uid = %s AND (embedding <=> %s < %s)
+                    ORDER BY embedding <=> %s
                     LIMIT 1
                     """,
                     (uid, str(embedding), self.match_threshold, str(embedding)),

@@ -8,11 +8,29 @@ class FaceService:
     def __init__(self, config):
         self.detector = YuNetMultiViewAligner(
             model_path=config.YUNET_PATH,
-            desired_size=160,
-            confidence_threshold=0.9,
+            desired_size=112,
+            confidence_threshold=0.8,
             nms_threshold=0.3,
-            top_k=5000,
+            top_k=100,
         )
+
+        if config.USE_QUANTIZED:
+            options = ort.SessionOptions()
+            options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            options.intra_op_num_threads = 2  # Match CPU cores
+            options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+
+            model = ort.InferenceSession(
+                config.ARCFACE_INT8_PATH,
+                providers=['CPUExecutionProvider']
+                sess_options=options
+            )
+        else: 
+            arcface_ort = ort.InferenceSession(
+                config.ARCFACE_PATH,
+                providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+            )
+
 
     def get_faces(self, rgb_frame):
         """
@@ -30,6 +48,10 @@ class FaceService:
         """
         From frame, return list of embeddings of faces
         """
+
+        # needs to be BGR for arcface
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
         if img.dtype != np.uint8:
             img = (img * 255).astype(np.uint8)
 
@@ -37,14 +59,17 @@ class FaceService:
         embedding_list = []
 
         for face in faces:
-            embedding = DeepFace.represent(
-                face.aligned_face,
-                model_name="ArcFace",
-                enforce_detection=False,
-                align=False,
-                detector_backend="skip",
-            )[0]["embedding"]
+            img_processed = aligned_face.astype(np.float32)
+            img_processed = np.expand_dims(img_processed, axis=0)
+            img_processed = np.transpose(img_processed, (0, 3, 1, 2))
+
+            input_name = model.get_inputs()[0].name
+            output_name = model.get_outputs()[0].name
+
+            embedding = model.run([output_name], {input_name: img_processed})[0]
+            embedding = embedding.flatten()
             embedding /= np.linalg.norm(embedding)
             embedding_list.append(np.array(embedding))
 
         return embedding_list
+

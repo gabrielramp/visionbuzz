@@ -232,6 +232,8 @@ def create_contact():
     if not cluster_embeds:
         return jsonify({"error": "Cluster not found"}), 404
     avg_embed = np.mean(cluster_embeds, axis=0)
+    avg_embed /= np.linalg.norm(avg_embed)
+
     # Store new contact with name
     success = database_service.create_contact(
         uid=user_id, name=contact_name, embedding=avg_embed.tolist()
