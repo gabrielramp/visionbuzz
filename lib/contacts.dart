@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
+import 'dart:convert';
 import 'auth_service.dart';
 //stupidmanthing
 //imfuckingballing
@@ -13,8 +14,34 @@ class ContactsPage extends StatelessWidget {
   var authService;
   var authProvider;
   
-  Future<http.Response> getContacts() {
-    return http.get(Uri.parse('http://159.223.99.186/api/v1/pull_contacts'));
+  Future<http.Response> getContacts() async{
+    var token = await authProvider.getToken();
+    print(token);
+    final response = await http.get(
+      Uri.parse('http://159.223.99.186/api/v1/pull_contacts'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': ('Bearer ' + token),
+      },
+    );
+    if (response.statusCode == 200) {
+      for(var c=0; c<3; c++){
+      var body = await response.body;
+      print("All good");
+      print(body);}
+      // var accessToken = jsonDecode(response.body)['access_token'];
+      // print("Specifically access token = " + accessToken);
+      // authProvider.login(accessToken);
+    } else if (response.statusCode == 401) {
+      print("Bad login info");
+      print(jsonDecode(response.body));
+    } else {
+      print("Something unforeseen went wrong");
+      print("Error Code: "+response.statusCode.toString());
+      print(response.body);
+
+    }
+    return response;
   }
 
   final List<String> letterHeads = <String>[

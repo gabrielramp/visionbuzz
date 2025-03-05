@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
@@ -159,6 +162,8 @@ class TimelineSection extends StatelessWidget {
   } // TimelineSection Widget
 
   Future<void> editContact(BuildContext context, Event event) async {
+    var canVibe = await Vibration.hasCustomVibrationsSupport();
+    print(canVibe);
     return showDialog<void>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -206,7 +211,11 @@ class editContactDialog extends StatelessWidget {
                     child: TextField(
                   controller: TextEditingController(text: event.name),
                   style: textTheme.headlineMedium,
-                ))
+                )),
+                ElevatedButton(
+                    onPressed: () => {
+                      HapticFeedback.heavyImpact()},
+                    child: Text("Vibes"))
               ],
             ))
       ]),
