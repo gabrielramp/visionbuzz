@@ -17,22 +17,16 @@ class FaceService:
             top_k=100,
         )
 
-        if config.USE_QUANTIZED:
-            options = ort.SessionOptions()
-            options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-            options.intra_op_num_threads = 2  # Match CPU cores
-            options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        options = ort.SessionOptions()
+        options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        options.intra_op_num_threads = 2  # Match CPU cores
+        options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
 
-            self.model = ort.InferenceSession(
-                config.ARCFACE_INT8_PATH,
-                providers=["CPUExecutionProvider"],
-                sess_options=options,
-            )
-        else:
-            self.model = ort.InferenceSession(
-                config.ARCFACE_PATH,
-                providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
-            )
+        self.model = ort.InferenceSession(
+            config.RECOG_PATH,
+            providers=["CPUExecutionProvider"],
+            sess_options=options,
+        )
 
     def get_faces(self, rgb_frame):
         """

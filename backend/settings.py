@@ -31,11 +31,8 @@ class Config:
     SCHEMA_PATH = os.getenv("SCHEMA_PATH", "db.sql")
 
     # Face Recognition Settings
-    USE_QUANTIZED = bool(os.getenv("USE_QUANTIZED", "true"))
-
     YUNET_PATH = os.getenv("YUNET_PATH", "../models/face_detection_yunet_2023mar.onnx")
-    ARCFACE_PATH = os.getenv("ARCFACE_PATH", "../models/arcface_full.onnx")
-    ARCFACE_INT8_PATH = os.getenv("ARCFACE_INT8_PATH", "../models/arcface_int8.onnx")
+    RECOG_PATH = os.getenv("RECOG_PATH", "../models/edgeface_s.onnx")
 
     
 
