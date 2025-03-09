@@ -116,11 +116,11 @@ class HomePage extends StatelessWidget {
 class TimelineSection extends StatelessWidget {
   var events;
   var authProvider;
-
   TimelineSection({required this.events});
   @override
   Widget build(BuildContext context) {
     ThemeData themey = Theme.of(context);
+
     ColorScheme colorScheme = themey.colorScheme;
     authProvider = Provider.of<AuthProvider>(context);
 
@@ -221,6 +221,23 @@ class TimelineSection extends StatelessWidget {
         return editContactDialog(context: context, event: event);
       },
     );
+  }
+  void createContact(String cluster_id, String contact_name) async {
+    final response = await http.post(
+      Uri.parse('http://159.223.99.186/api/v1/create_contact'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'cluster_id': cluster_id, 'contact_name': contact_name}),
+    );
+    if (response.statusCode == 200) {
+      // print(response.body);
+      print("createContact PASS");
+    } else if (response.statusCode == 401) {
+      print("Bad call info");
+    } else {
+      print("Something unforeseen went wrong");
+    }
   }
 } // TimelineSection Class
 
