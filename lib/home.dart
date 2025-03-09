@@ -1,13 +1,18 @@
+// Builtin Dart Stuff
+import 'dart:math';
+import 'dart:convert';
+
+// Resource Packages
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:timelines_plus/timelines_plus.dart';
-import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+
+// Our onboard stuff
 import 'auth_provider.dart';
 
 class Event {
@@ -17,11 +22,20 @@ class Event {
   Event({required this.name, required this.time, required this.seen});
 }
 
+class TimelineEntry{
+  int id;
+  List<String> timesSeen;
+  TimelineEntry({required this.id, required this.timesSeen});
+}
+
 Future<http.Response> makeGetCall() {
   return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
 }
 
 class HomePage extends StatelessWidget {
+  var authProvider;
+  List<TimelineEntry> wholeTimeline = new List<TimelineEntry>.empty(growable: true); 
+
   HomePage({super.key});
   var numDays = Random().nextInt(3) + 5; // Get this from database
   final ScrollController _controller = ScrollController();
@@ -30,8 +44,44 @@ class HomePage extends StatelessWidget {
     _controller.jumpTo(_controller.position.maxScrollExtent);
   }
 
+  Future<http.Response> getTimeline() async {
+    // List<Contact> contacts = new List.empty();
+    var token = await authProvider.getToken();
+    print(token);
+    final response = await http.get(
+      Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': ('Bearer ' + token),
+      },
+    );
+    if (response.statusCode == 200) {
+      var body = await jsonDecode(response.body);
+      print("Timeline pulled, we ball");
+      for(var entry in body.entries){
+        print(entry.key);
+        print(entry.value);
+        print("----------------------------------------------------------");
+      }
+      // print(body);
+      // var accessToken = jsonDecode(response.body)['access_token'];
+      // print("Specifically access token = " + accessToken);
+      // authProvider.login(accessToken);
+    } else if (response.statusCode == 401) {
+      print("Bad login info");
+      print(jsonDecode(response.body));
+    } else {
+      print("Something unforeseen went wrong");
+      print("Error Code: " + response.statusCode.toString());
+      print(response.body);
+    }
+    return response;
+  }
+
   @override
   Widget build(BuildContext context) {
+     authProvider = Provider.of<AuthProvider>(context);
+     getTimeline();
     final List<Event> events = [
       new Event(name: "Person A", time: "1 PM", seen: true),
       new Event(name: "Person B", time: "2 PM", seen: false),
@@ -214,7 +264,7 @@ class editContactDialog extends StatelessWidget {
                 )),
                 ElevatedButton(
                     onPressed: () => {
-                      HapticFeedback.heavyImpact()},
+                      HapticFeedback.vibrate()},
                     child: Text("Vibes"))
               ],
             ))

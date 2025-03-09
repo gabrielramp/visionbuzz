@@ -1,20 +1,74 @@
-import 'package:flutter/material.dart';
-import 'themes.dart' as themes;
+import 'dart:ffi';
 import 'dart:math';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+
+import 'themes.dart' as themes;
 import 'auth_provider.dart';
-import 'dart:convert';
 import 'auth_service.dart';
 //stupidmanthing
 //imfuckingballing
+
+class Contact {
+  int cid;
+  String last_seen;
+  String name;
+  var vibration;
+  Contact({required this.cid, required this.name, required this.last_seen});
+
+  @override
+  String toString() {
+    return ("name: " +
+        this.name +
+        " cid: " +
+        this.cid.toString() +
+        " last_seen: " +
+        this.last_seen);
+  }
+}
+
 class ContactsPage extends StatelessWidget {
   ContactsPage({super.key});
   var authService;
   var authProvider;
-  
-  Future<http.Response> getContacts() async{
+  int numSections = 0;
+  List<Contact> contacts = new List<Contact>.empty(growable: true);
+  Map<String, int> letters = {
+    'A': 0,
+    'B': 0,
+    'C': 0,
+    'D': 0,
+    'E': 0,
+    'F': 0,
+    'G': 0,
+    'H': 0,
+    'I': 0,
+    'J': 0,
+    'K': 0,
+    'L': 0,
+    'M': 0,
+    'N': 0,
+    'O': 0,
+    'P': 0,
+    'Q': 0,
+    'R': 0,
+    'S': 0,
+    'T': 0,
+    'U': 0,
+    'V': 0,
+    'W': 0,
+    'X': 0,
+    'Y': 0,
+    'Z': 0,
+    '?': 0
+  };
+  Map<String, int> filledLetters = new Map<String, int>();
+
+  Future<http.Response> getContacts() async {
     var token = await authProvider.getToken();
     print(token);
     final response = await http.get(
@@ -25,10 +79,19 @@ class ContactsPage extends StatelessWidget {
       },
     );
     if (response.statusCode == 200) {
-      for(var c=0; c<3; c++){
-      var body = await response.body;
+      List<dynamic> body = await jsonDecode(response.body);
       print("All good");
-      print(body);}
+      for (dynamic contact in body) {
+        this.contacts.add(new Contact(
+            cid: contact['cid'],
+            name: contact['name'],
+            last_seen: contact['last_seen']));
+        //letters.add
+        String firstLetter = contact['name'].trim()[0].toUpperCase();
+        if (letters[firstLetter] != null) if (letters[firstLetter] == 0)
+          numSections += 1;
+        letters[firstLetter] = (letters[firstLetter] ?? 0) + 1;
+      }
       // var accessToken = jsonDecode(response.body)['access_token'];
       // print("Specifically access token = " + accessToken);
       // authProvider.login(accessToken);
@@ -37,42 +100,18 @@ class ContactsPage extends StatelessWidget {
       print(jsonDecode(response.body));
     } else {
       print("Something unforeseen went wrong");
-      print("Error Code: "+response.statusCode.toString());
+      print("Error Code: " + response.statusCode.toString());
       print(response.body);
-
     }
+    this.contacts.sort(contactComparison);
     return response;
   }
 
-  final List<String> letterHeads = <String>[
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z',
-    '?'
-  ];
+  int contactComparison(Contact a, Contact b) {
+    String aname = a.name;
+    String bname = b.name;
+    return aname.compareTo(bname);
+  }
 
   final String customizableLeadingString = "What";
   final int maxContacts = 10;
@@ -80,32 +119,39 @@ class ContactsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     authProvider = Provider.of<AuthProvider>(context);
-    if(authProvider.isLoggedIn){
-      print(getContacts());
-    }
+    // if (authProvider.isLoggedIn) {
+    //   getContacts();
+    //   print(this.contacts);
+    // }
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
+    // this.contacts = getContacts();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contacts'),
-        centerTitle: false,
-      ),
-      body: Align(
-        alignment: Alignment.topLeft,
-        child: alphabetSections(context),
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('Contacts'),
+          centerTitle: false,
+        ),
+        body: FutureBuilder(
+            future: getContacts(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              return Align(
+                  alignment: Alignment.topLeft,
+                  child: GestureDetector(
+                    onTap: () => print(this.contacts),
+                    child: alphabetSections(context),
+                  ));
+            }));
   }
 
   Widget alphabetSections(BuildContext context) {
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
-
+    print(this.numSections);
     return ListView.separated(
       shrinkWrap: true,
       padding: const EdgeInsets.all(8),
-      itemCount: 27,
+      itemCount: this.numSections,
       itemBuilder: (BuildContext context, int index) {
         return Column(
             // height: 50,
@@ -114,12 +160,14 @@ class ContactsPage extends StatelessWidget {
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  letterHeads[index],
+                  contacts[index].name.trim()[0].toUpperCase(),
                   style: textTheme.headlineMedium,
                 ),
               ),
-              letterContacts(context, Random().nextInt(maxContacts - 1) + 1,
-                  letterHeads[index])
+              letterContacts(
+                  context,
+                  (letters[contacts[index].name.trim()[0].toUpperCase()] ?? 0),
+                  index)
             ]);
       },
       separatorBuilder: (BuildContext context, int index) =>
@@ -128,7 +176,7 @@ class ContactsPage extends StatelessWidget {
   }
 
   Widget letterContacts(
-      BuildContext context, int contactsInSection, String startsWith) {
+      BuildContext context, int contactsInSection, int bigIndex) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return ListView.separated(
       shrinkWrap: true,
@@ -136,8 +184,7 @@ class ContactsPage extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       itemCount: contactsInSection,
       itemBuilder: (BuildContext context, int index) {
-        return contactRow(context,
-            "$startsWith Contact #${index + 1} / $customizableLeadingString");
+        return contactRow(context, contacts[bigIndex].name);
       },
       separatorBuilder: (BuildContext context, int index) => Divider(
         color: colorScheme.primary,
@@ -162,18 +209,18 @@ class ContactsPage extends StatelessWidget {
               children: [
                 Container(
                     height: 75,
-                    margin: const EdgeInsets.only(right:20),
+                    margin: const EdgeInsets.only(right: 20),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey,
                     ),
                     child: Container(
-                      padding:const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(
-                      Icons.person,
-                      size: 70,
-                      color: colorScheme.secondary,
-                    ))),
+                          Icons.person,
+                          size: 70,
+                          color: colorScheme.secondary,
+                        ))),
                 Text(
                   name,
                   style: textTheme.headlineSmall,
