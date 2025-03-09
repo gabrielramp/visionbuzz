@@ -16,83 +16,96 @@
 #include "esp_camera.h"
 // #include "esp_spiffs.h"
 
-#include "led.h"
-#include "ble.h"
 #include "wifi.h"
 #include "camera.h"
-#include "shell.h"
+#include "ipc.h"
+
+void ipc_rx_cb(uint8_t *msg, int len, uint8_t msg_id)
+{
+    printf("Msg received: %d bytes [%.*s]\n", len, len, msg);
+    fflush(stdout);
+
+    ipc_handle_msg(msg, len, msg_id);
+}
 
 void app_main(void)
 {
     printf("woah look my code is running\n");
     fflush(stdout);
 
-    // shell_init();
-
-    /*
-    // esp_err_t err = camera_init();
-
-    if (err)
-    {
-        printf("Camera initialization error - %d", err);
-        fflush(stdout);
-    }
-
-    led_init(14);
-    led_off(14);*/
+    ipc_init(12, 13, ipc_rx_cb);
 
     wifi_init();
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
-    // wifi_connect();
-    ble_init();
-    
-    // wifi_set_identity("au907615");
-    // wifi_set_username("au907615");
-    // wifi_set_password("!!11qqQQ!!11qqQQ!!11qqQQ");
-    // wifi_set_ssid("UCF_WPA2");
-    // wifi_init();
-    /*
-    gpio_config_t gpio_cfg_4 = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = (1 << 4),
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .pull_up_en = GPIO_PULLUP_DISABLE
-    };*/
-    
-    /*
-
-    gpio_config_t gpio_cfg_15 = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1 << 15),
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-        .pull_up_en = GPIO_PULLUP_DISABLE
-    };
-
-    gpio_config(&gpio_cfg_4);
-    gpio_config(&gpio_cfg_15);
-
-    uart_driver_delete(UART_NUM_0);
-    uart_driver_install(UART_NUM_0, 2048, 2048, 0, NULL, 0);
-    uart_param_config(UART_NUM_0, &uart_cfg);
-    */
-    
-    /*
-    esp_err_t err = esp_camera_init(&camera_config);
+    /* esp_err_t err = camera_init();
 
     if (err)
     {
-        printf("Error - camera init (err %d)", err);
-        fflush(stdout);
-        return;
-    }*/
-
-    led_task_create();
-    // vTaskStartScheduler();
+        printf("Camera init failed - %d", err);
+    }
+    else
+    {
+        printf("Camera initialized");
+    }
+        */
     
+    fflush(stdout);
+
+    vTaskDelay(pdMS_TO_TICKS(500));
+    
+    ipc_wifi_set_password((uint8_t *) "!!11qqQQ!!11qqQQ!!11qqQQ", 24);
+    ipc_wifi_set_username((uint8_t *) "au907615", 8);
+    ipc_wifi_set_identity((uint8_t *) "au907615", 8);
+    ipc_wifi_set_ssid((uint8_t *) "UCF_WPA2", 8);
+    ipc_api_set_username((uint8_t *) "test6", 5);
+    ipc_api_set_password((uint8_t *) "test6", 5);
+
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    ipc_wifi_connect();
+
+    while (!wifi_is_ready())
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+
+    wifi_api_login();
+
+    while (true)
+    {
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+
     printf("Initialization successful\n");
     fflush(stdout);
+
+    camera_fb_t *img;
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    while (true)
+    {
+        if (wifi_is_ready())
+        {
+            img = camera_get_img();
+    
+            printf("Corners: 0x%x\n", img->buf[img->len/2]);
+            fflush(stdout);
+    
+            wifi_send_img(img);
+    
+            vTaskDelay(pdMS_TO_TICKS(100));
+    
+            camera_release_img(img);
+            
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+        else
+        {
+            vTaskDelay(pdMS_TO_TICKS(2000));
+        }
+    }
 
     // vTaskStartScheduler();
 }

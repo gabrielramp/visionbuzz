@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "esp_mac.h"
 #include "esp_err.h"
+#include "esp_camera.h"
 
 #define WIFI_CREDENTIAL_MAX_LEN 32
 
@@ -20,18 +21,19 @@
     }
 
 esp_err_t wifi_init(void);
-esp_err_t wifi_set_identity(const char *identity);
-esp_err_t wifi_set_username(const char *username);
-esp_err_t wifi_set_password(const char *password);
-esp_err_t wifi_set_ssid(const char *ssid);
-esp_err_t wifi_connect();
+esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len);
+esp_err_t wifi_set_username(uint8_t *username, uint8_t len);
+esp_err_t wifi_set_password(uint8_t *password, uint8_t len);
+esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len);
+esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len);
+esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len);
+esp_err_t wifi_api_login(void);
+esp_err_t wifi_connect(void);
+esp_err_t wifi_disconnect(void);
 esp_err_t wifi_connect_cb(void);
+esp_err_t wifi_send_img(camera_fb_t *img);
 esp_err_t wifi_ping(void);
 esp_err_t wifi_print_credentials(void);
-char *wifi_identity_addr(void);
-char *wifi_username_addr(void);
-char *wifi_password_addr(void);
-char *wifi_ssid_addr(void);
-uint8_t *wifi_connect_addr(void);
+bool wifi_is_ready(void);
 
 #endif

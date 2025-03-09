@@ -19,13 +19,16 @@
 #include "esp_http_client.h"
 #include "camera.h"
 
-static char _ssid[WIFI_CREDENTIAL_MAX_LEN + 1];
-static char _password[WIFI_CREDENTIAL_MAX_LEN + 1];
-static char _identity[WIFI_CREDENTIAL_MAX_LEN + 1];
-static char _username[WIFI_CREDENTIAL_MAX_LEN + 1];
+static char _ssid[WIFI_CREDENTIAL_MAX_LEN + 1] = "UCF_WPA2";
+static char _password[WIFI_CREDENTIAL_MAX_LEN + 1] = "!!11qqQQ!!11qqQQ!!11qqQQ";
+static char _identity[WIFI_CREDENTIAL_MAX_LEN + 1] = "au907615";
+static char _username[WIFI_CREDENTIAL_MAX_LEN + 1] = "au907615";
+static char _api_username[WIFI_CREDENTIAL_MAX_LEN + 1] = "a";
+static char _api_password[WIFI_CREDENTIAL_MAX_LEN + 1] = "a";
 static uint8_t _connect = 0;
 
 static bool connected = false;
+static bool got_ip = false;
 
 esp_err_t nvs_save_credentials(void)
 {
@@ -157,13 +160,15 @@ static void ip_event_handler(void* event_handler_arg, esp_event_base_t event_bas
     switch(event_id)
     {
         case IP_EVENT_STA_GOT_IP:
+            got_ip = true;
             ip_event_got_ip_t *ip_event = (ip_event_got_ip_t *) event_data;
             printf("Got IP address: " IPSTR, IP2STR(&ip_event->ip_info.ip));
             fflush(stdout);
             // wifi_ping();
             break;
 
-        case IP_EVENT_STA_LOST_IP:
+        case IP_EVENT_STA_LOST_IP:  
+            got_ip = false;
             printf("Lost IP address");
             fflush(stdout);
             break;
@@ -279,10 +284,10 @@ esp_err_t wifi_init(void)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_identity(const char *identity)
+esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len)
 {
-    strcpy(_identity, identity);
-    WIFI_ERROR_CHECK(esp_eap_client_set_identity((const unsigned char *) identity, strlen(identity)), "esp_eap_client_set_identity");
+    strncpy(_identity, (void *) identity, len);
+    _identity[len] = '\0';
 
     return ESP_OK;
 }
@@ -294,10 +299,10 @@ esp_err_t wifi_set_identity(const char *identity)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_username(const char *username)
+esp_err_t wifi_set_username(uint8_t *username, uint8_t len)
 {
-    strcpy(_username, username);
-    WIFI_ERROR_CHECK(esp_eap_client_set_username((const unsigned char *) username, strlen(username)), "esp_eap_client_set_username");
+    strncpy(_username, (void *) username, len);
+    _username[len] = '\0';
 
     return ESP_OK;
 }
@@ -309,10 +314,10 @@ esp_err_t wifi_set_username(const char *username)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_password(const char *password)
+esp_err_t wifi_set_password(uint8_t *password, uint8_t len)
 {
-    strcpy(_password, password);
-    WIFI_ERROR_CHECK(esp_eap_client_set_password((const unsigned char *) password, strlen(password)), "esp_eap_client_set_password");
+    strncpy(_password, (void *) password, len);
+    _password[len] = '\0';
 
     return ESP_OK;
 }
@@ -324,18 +329,118 @@ esp_err_t wifi_set_password(const char *password)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_ssid(const char *ssid)
+esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len)
 {
-    strcpy(_ssid, ssid);
+    strncpy(_ssid, (void *) ssid, len);
+    _ssid[len] = '\0';
+
     return ESP_OK;
 }
 
-esp_err_t wifi_connect()
+/**
+ * Set the API username to use to log in to the server API
+ * 
+ * @param api_username a null-terminated ascii string representation of the SSID
+ * @param len the length of api_username
+ * 
+ * @returns ESP_OK if successful, an ESP error code if not. 
+ */
+esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len)
 {
-    strcpy(_password, "!!11qqQQ!!11qqQQ!!11qqQQ");
-    strcpy(_username, "au907615");
-    strcpy(_identity, "au907615");
-    strcpy(_ssid, "UCF_WPA2");
+    strncpy(_api_username, (void *) api_username, len);
+    _api_username[len] = '\0';
+
+    return ESP_OK;
+}
+
+/**
+ * Set the API username to use to log in to the server API
+ * 
+ * @param api_password a null-terminated ascii string representation of the SSID
+ * @param len the length of api_password
+ * 
+ * @returns ESP_OK if successful, an ESP error code if not. 
+ */
+esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len)
+{
+    strncpy(_api_password, (void *) api_password, len);
+    _api_password[len] = '\0';
+
+    return ESP_OK;
+}
+
+esp_err_t wifi_api_login(void)
+{
+    const static esp_http_client_config_t http_config = {
+        .url = "http://159.223.99.186/api/v1/login",
+        .event_handler = http_event_handler, 
+        .method = HTTP_METHOD_POST
+    };
+
+    esp_http_client_handle_t http_handle = esp_http_client_init(&http_config);
+
+    if (http_handle == NULL)
+    {
+        printf("HTTP client init error!");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+    
+    esp_err_t err = esp_http_client_set_header(http_handle, "Content-Type", "application/json");
+
+    if (err)
+    {
+        printf("err 1");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+    
+    static uint8_t login_json_buf[256];
+    memset(login_json_buf, 0, 256);
+    int api_username_len = strlen(_api_username);
+    int api_password_len = strlen(_api_password);
+
+    strncpy((void *) login_json_buf, "{\"username\": \"", 14);
+    strncpy((void *) &(login_json_buf[14]), _api_username, api_username_len);
+    strncpy((void *) &(login_json_buf[14 + api_username_len]), "\", \"password\": \"", 16);
+    strncpy((void *) &(login_json_buf[30 + api_username_len]), _api_password, api_password_len);
+    strncpy((void *) &(login_json_buf[30 + api_username_len + api_password_len]), "\"}", 2);
+
+    err = esp_http_client_set_post_field(http_handle, (char *) &login_json_buf, 32 + api_username_len + api_password_len);
+
+    printf("Login JSON: %.*s", 32 + api_username_len + api_password_len, login_json_buf);
+    fflush(stdout);
+
+    if (err)
+    {
+        printf("err 2");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+
+    err = esp_http_client_perform(http_handle);
+
+    if (err)
+    {
+        printf("HTTP err - %u", err);
+        fflush(stdout);
+    }
+
+    printf("Login request sent!\n");
+    fflush(stdout);
+
+    esp_http_client_cleanup(http_handle);
+    return ESP_OK;
+}
+
+esp_err_t wifi_connect(void)
+{
+    // strcpy(_password, "!!11qqQQ!!11qqQQ!!11qqQQ");
+    // strcpy(_username, "au907615");
+    // strcpy(_identity, "au907615");
+    // strcpy(_ssid, "UCF_WPA2");
+
+    _connect = true;
 
     static wifi_config_t config;
 
@@ -349,6 +454,13 @@ esp_err_t wifi_connect()
     esp_eap_client_set_identity((const unsigned char *) _identity, strlen(_identity));
 
     return esp_wifi_connect();
+}
+
+esp_err_t wifi_disconnect()
+{
+    _connect = false;
+
+    return esp_wifi_disconnect();
 }
 
 esp_err_t wifi_connect_cb(void)
@@ -373,6 +485,56 @@ esp_err_t wifi_connect_cb(void)
     }
 
     return EALREADY;
+}
+
+esp_err_t wifi_send_img(camera_fb_t *img)
+{
+    const static esp_http_client_config_t http_config = {
+        .url = "http://159.223.99.186/api/v1/test_upload",
+        .event_handler = http_event_handler, 
+        .method = HTTP_METHOD_POST
+    };
+
+    esp_http_client_handle_t http_handle = esp_http_client_init(&http_config);
+
+    if (http_handle == NULL)
+    {
+        printf("HTTP client init error!");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+    
+    esp_err_t err = esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");
+
+    if (err)
+    {
+        printf("err 1");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+
+    err = esp_http_client_set_post_field(http_handle, (char *) &img->buf[0], img->len);
+
+    if (err)
+    {
+        printf("err 2");
+        fflush(stdout);
+        return ESP_FAIL;
+    }
+
+    err = esp_http_client_perform(http_handle);
+
+    if (err)
+    {
+        printf("HTTP err - %u", err);
+        fflush(stdout);
+    }
+
+    printf("Image sent!\n");
+    fflush(stdout);
+
+    esp_http_client_cleanup(http_handle);
+    return ESP_OK;
 }
 
 esp_err_t wifi_ping()
@@ -446,27 +608,7 @@ esp_err_t wifi_print_credentials(void)
     return ESP_OK;
 }
 
-char *wifi_identity_addr(void)
+bool wifi_is_ready(void)
 {
-    return _identity;
-}
-
-char *wifi_password_addr(void)
-{
-    return _password;
-}
-
-char *wifi_username_addr(void)
-{
-    return _username;
-}
-
-char *wifi_ssid_addr(void)
-{
-    return _ssid;
-}
-
-uint8_t *wifi_connect_addr(void)
-{
-    return &_connect;
+    return connected && got_ip;
 }

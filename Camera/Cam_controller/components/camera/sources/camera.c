@@ -51,17 +51,34 @@ static camera_config_t camera_config = {
     .ledc_channel = LEDC_CHANNEL_0,
 
     .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-    .frame_size = FRAMESIZE_QVGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
+    .frame_size = FRAMESIZE_VGA,    //QQVGA-UXGA, For ESP32, do not use sizes above QVGA when not JPEG. The performance of the ESP32-S series has improved a lot, but JPEG mode always gives better frame rates.
 
     .jpeg_quality = 12, //0-63, for OV series camera sensors, lower number means higher quality
     .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
-    .fb_location = CAMERA_FB_IN_PSRAM,
+    .fb_location = CAMERA_FB_IN_DRAM,
     .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
 };
 
 esp_err_t camera_init(void)
 {
     return esp_camera_init(&camera_config);
+}
+
+static bool camera_enabled = false;
+
+bool camera_is_enabled(void)
+{
+    return camera_enabled;
+}
+
+void camera_enable(void)
+{
+    camera_enabled = true;
+}
+
+void camera_disable(void)
+{
+    camera_enabled = false;
 }
 
 camera_fb_t *camera_get_img(void)
@@ -112,4 +129,9 @@ camera_fb_t *camera_get_img(void)
     fflush(stdout);
 
     return fb;
+}
+
+void camera_release_img(camera_fb_t *img)
+{
+    esp_camera_fb_return(img);
 }
