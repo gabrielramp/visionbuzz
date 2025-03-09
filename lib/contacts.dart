@@ -107,6 +107,24 @@ class ContactsPage extends StatelessWidget {
     return response;
   }
 
+    void editContact(int cid, String name, int vib_pattern) async {
+    final response = await http.patch(
+      Uri.parse('http://159.223.99.186/api/v1/edit_contact'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({'cid': cid, 'name': name, 'vib_pattern': vib_pattern}),
+    );
+    if (response.statusCode == 200) {
+      // print(response.body);
+      print("editContact PASS");
+    } else if (response.statusCode == 401) {
+      print("Bad call info");
+    } else {
+      print("Something unforeseen went wrong");
+    }
+  }
+
   int contactComparison(Contact a, Contact b) {
     String aname = a.name;
     String bname = b.name;
