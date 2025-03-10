@@ -265,7 +265,7 @@ class DatabaseService:
             return False
 
         set_fields = ", ".join(f"{key} = %s" for key in update_fields.keys())
-        values = list(update_fields.values()) + [uid, cid]
+        values = tuple(update_fields.values()) + (uid, cid)
         query = f"""
                 UPDATE contacts
                 SET {set_fields}
@@ -276,7 +276,9 @@ class DatabaseService:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(query, values)
-            return True
+                conn.commit()
+                rows_affected = cur.rowcount
+                return rows_affected > 0
 
         return False
 

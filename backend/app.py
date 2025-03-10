@@ -295,6 +295,7 @@ def pull_timeline():
 @jwt_required()
 def edit_contact(cid):
     uid = get_jwt_identity()
+    cid = int(cid)
     req_params = request.get_json()
 
     res = database_service.update_contact(uid, cid, req_params)
