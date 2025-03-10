@@ -17,11 +17,24 @@
 
 #include "led.h"
 #include "ble.h"
+#include "ipc.h"
+
+void ipc_rx_cb(uint8_t *msg, int len, uint8_t msg_id)
+{
+    printf("Msg received: %d bytes [%.*s]\n", len, len, msg);
+    fflush(stdout);
+
+    ipc_handle_msg(msg, len, msg_id);
+}
 
 void app_main(void)
 {
     printf("woah look my code is running\n");
     fflush(stdout);
+
+    ipc_init(9, 10, ipc_rx_cb);
+
+    vTaskDelay(pdMS_TO_TICKS(250));
 
     /*led_init(14);
     led_off(14);*/

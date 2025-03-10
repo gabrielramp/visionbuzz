@@ -15,6 +15,9 @@
 #include "esp_bt_device.h"
 #include "esp_mac.h"
 
+#include <string.h>
+#include "ipc.h"
+
 #include "../../LED/include/led.h"
 
 #define ERR_CHECK(err) if (err) { \
@@ -40,8 +43,59 @@ static TaskHandle_t ble_init_task;
 static struct ble_service ble_services[BLE_NUM_SERVICES];
 static struct ble_characteristic vibrator_characteristics[BLE_NUM_VIBRATOR_CHARACTERISTICS];
 static struct ble_characteristic wifi_characteristics[BLE_NUM_WIFI_CHARACTERISTICS];
+static struct ble_characteristic api_characteristics[BLE_NUM_API_CHARACTERISTICS];
 
 static uint32_t vibrator_ctrl_value = 0;
+static uint8_t wifi_username[33];
+static uint8_t wifi_identity[33];
+static uint8_t wifi_password[33];
+static uint8_t wifi_ssid[33];
+static bool wifi_connect = false;
+
+static uint8_t api_token[513];
+
+esp_err_t wifi_username_write_cb(uint16_t len, uint16_t offset)
+{
+    return ipc_wifi_set_username(&(wifi_username[offset]), len, offset);
+}
+
+esp_err_t wifi_identity_write_cb(uint16_t len, uint16_t offset)
+{
+    return ipc_wifi_set_identity(&(wifi_identity[offset]), len, offset);
+}
+
+esp_err_t wifi_password_write_cb(uint16_t len, uint16_t offset)
+{
+    return ipc_wifi_set_password(&(wifi_password[offset]), len, offset);
+}
+
+esp_err_t wifi_ssid_write_cb(uint16_t len, uint16_t offset)
+{
+    return ipc_wifi_set_ssid(&(wifi_ssid[offset]), len, offset);
+}
+
+esp_err_t wifi_connect_write_cb(uint16_t len, uint16_t offset)
+{
+    if (wifi_connect == true)
+        return ipc_wifi_connect();
+    else
+        return ipc_wifi_disconnect();
+}
+
+esp_err_t api_token_write_cb(uint16_t len, uint16_t offset)
+{
+    while (len > 255)
+    {
+        ipc_api_set_token(api_token, 255, offset);
+
+        len -= 255;
+        offset += 255;
+    }
+    
+    ipc_api_set_token(&(api_token[offset]), (uint8_t) len, offset);
+
+    return ipc_api_set_token_len(len + offset);
+}
 
 esp_err_t ble_create_service(esp_gatt_srvc_id_t *srvc_id, uint16_t num_handles, struct ble_service *service_out)
 {
@@ -146,6 +200,9 @@ esp_err_t ble_init_interface()
     esp_bt_uuid_t wifi_identity_uuid = CHARACTERISTIC_UUID(WIFI_IDENTITY_UUID);
     esp_bt_uuid_t wifi_password_uuid = CHARACTERISTIC_UUID(WIFI_PASSWORD_UUID);
     esp_bt_uuid_t wifi_connect_uuid = CHARACTERISTIC_UUID(WIFI_CONNECT_UUID);
+    
+    esp_gatt_srvc_id_t api_srvc_id = SERVICE_ID(API_SERVICE_UUID, true);
+    esp_bt_uuid_t api_token_uuid = CHARACTERISTIC_UUID(API_TOKEN_UUID);
 
     esp_err_t err = ESP_OK;
 
@@ -163,42 +220,51 @@ esp_err_t ble_init_interface()
     err = ble_create_service(&wifi_srvc_id, 50, &(ble_services[1]));
     ERR_CHECK(err);
 
-    static char fix_me_too[33];
-
     ble_services[1].characteristics = wifi_characteristics;
     ble_services[1].characteristics_len = BLE_NUM_WIFI_CHARACTERISTICS;
 
-    err = ble_create_characteristic(ble_services[1].handle, &wifi_ssid_uuid, (void *) &fix_me_too, 
-        32, &ble_services[1].characteristics[0]);
+    err = ble_create_characteristic(ble_services[1].handle, &wifi_ssid_uuid, (void *) wifi_ssid, 
+        sizeof(wifi_ssid) - 1, &ble_services[1].characteristics[0]);
     ERR_CHECK(err);
 
-    ble_services[1].characteristics[0].write_cb = NULL;
+    ble_services[1].characteristics[0].write_cb = wifi_ssid_write_cb;
 
-    err = ble_create_characteristic(ble_services[1].handle, &wifi_username_uuid, (void *) &fix_me_too, 
-        32, &ble_services[1].characteristics[1]);
-    ERR_CHECK(err);
-    
-    ble_services[1].characteristics[1].write_cb = NULL;
-
-    err = ble_create_characteristic(ble_services[1].handle, &wifi_identity_uuid, (void *) &fix_me_too, 
-        32, &ble_services[1].characteristics[2]);
+    err = ble_create_characteristic(ble_services[1].handle, &wifi_username_uuid, (void *) wifi_username, 
+        sizeof(wifi_username) - 1, &ble_services[1].characteristics[1]);
     ERR_CHECK(err);
     
-    ble_services[1].characteristics[2].write_cb = NULL;
+    ble_services[1].characteristics[1].write_cb = wifi_username_write_cb;
 
-    err = ble_create_characteristic(ble_services[1].handle, &wifi_password_uuid, (void *) &fix_me_too, 
-        32, &ble_services[1].characteristics[3]);
+    err = ble_create_characteristic(ble_services[1].handle, &wifi_identity_uuid, (void *) wifi_identity, 
+        sizeof(wifi_identity) - 1, &ble_services[1].characteristics[2]);
     ERR_CHECK(err);
     
-    ble_services[1].characteristics[3].write_cb = NULL;
+    ble_services[1].characteristics[2].write_cb = wifi_identity_write_cb;
 
-    static bool fix_me;
+    err = ble_create_characteristic(ble_services[1].handle, &wifi_password_uuid, (void *) wifi_password, 
+        sizeof(wifi_password) - 1, &ble_services[1].characteristics[3]);
+    ERR_CHECK(err);
+    
+    ble_services[1].characteristics[3].write_cb = wifi_password_write_cb;
 
-    err = ble_create_characteristic(ble_services[1].handle, &wifi_connect_uuid, (void *) &fix_me,
+    err = ble_create_characteristic(ble_services[1].handle, &wifi_connect_uuid, (void *) &wifi_connect,
          sizeof(bool), &ble_services[1].characteristics[4]);
     ERR_CHECK(err);
     
-    ble_services[1].characteristics[4].write_cb = NULL;
+    ble_services[1].characteristics[4].write_cb = wifi_connect_write_cb;
+
+    // Create the API token service
+    err = ble_create_service(&api_srvc_id, 50, &(ble_services[2]));
+    ERR_CHECK(err);
+
+    ble_services[2].characteristics = api_characteristics;
+    ble_services[2].characteristics_len = BLE_NUM_API_CHARACTERISTICS;
+
+    err = ble_create_characteristic(ble_services[2].handle, &api_token_uuid, (void *) api_token, 
+        sizeof(api_token) - 1, &ble_services[2].characteristics[0]);
+    ERR_CHECK(err);
+
+    ble_services[2].characteristics[0].write_cb = api_token_write_cb;
 
     return err;
 }
@@ -242,7 +308,7 @@ esp_err_t ble_handle_write_evt(struct gatts_write_evt_param *write_param)
     }
 
     if (characteristic->write_cb != NULL)
-        (*characteristic->write_cb)();
+        (*characteristic->write_cb)(write_param->len, write_param->offset);
 
     return ESP_OK;
 }

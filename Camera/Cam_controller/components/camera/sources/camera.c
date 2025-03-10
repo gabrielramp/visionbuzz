@@ -55,7 +55,7 @@ static camera_config_t camera_config = {
 
     .jpeg_quality = 12, //0-63, for OV series camera sensors, lower number means higher quality
     .fb_count = 1,       //When jpeg mode is used, if fb_count more than one, the driver will work in continuous mode.
-    .fb_location = CAMERA_FB_IN_DRAM,
+    .fb_location = CAMERA_FB_IN_PSRAM,
     .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
 };
 
@@ -85,7 +85,7 @@ camera_fb_t *camera_get_img(void)
 {
     camera_fb_t *fb = esp_camera_fb_get();
 
-    printf("Image captured: \n");
+    /* printf("Image captured: \n");
     
     switch (fb->format)
     {
@@ -126,7 +126,7 @@ camera_fb_t *camera_get_img(void)
     printf("Resolution: %ux%u\n", fb->width, fb->height);
     printf("Size:       %u bytes\n", fb->len);
 
-    fflush(stdout);
+    fflush(stdout);*/
 
     return fb;
 }

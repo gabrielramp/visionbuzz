@@ -3,7 +3,7 @@ set(idf_version "${IDF_VERSION_MAJOR}.${IDF_VERSION_MINOR}")
 
 # set conversion sources
 set(srcs
-    sources/ble.c
+    sources/ipc.c
 )
 
 set(include_dirs 
@@ -11,11 +11,11 @@ set(include_dirs
 )
 
 list(APPEND srcs
-    sources/ble.c
+    sources/ipc.c
 )
 
 idf_component_register(
   SRCS ${srcs}
   INCLUDE_DIRS ${include_dirs}
-  REQUIRES nvs_flash bt ipc
+  REQUIRES esp_driver_uart driver
 )

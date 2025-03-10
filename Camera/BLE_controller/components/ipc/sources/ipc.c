@@ -2,12 +2,10 @@
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "wifi.h"
-#include "camera.h"
 #include <stdlib.h>
 #include <string.h>
 
-const int uart_port = 2;
+const int uart_port = 1;
 static QueueHandle_t uart_queue = NULL;
 static ipc_receive_cb rx_cb = NULL;
 
@@ -290,68 +288,18 @@ esp_err_t ipc_send_error(uint8_t error_code)
 
 esp_err_t ipc_handle_msg(uint8_t *msg, uint8_t len, uint8_t msg_id)
 {
-    uint16_t offset;
-
     switch (msg[0])
     {
         case IPC_ACK:
-            printf("IPC msg ack'ed - %d\n", msg[1]);
+            printf("IPC msg ack'ed - %d", msg[1]);
             fflush(stdout);
             return ESP_OK;
 
-        case IPC_WIFI_USERNAME:
-            offset = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_username(&(msg[4]), msg[3], offset);
-            break;
-
-        case IPC_WIFI_IDENTITY:
-            offset = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_identity(&(msg[4]), msg[3], offset);
-            break;
-
-        case IPC_WIFI_PASSWORD:
-            offset = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_password(&(msg[4]), msg[3], offset);
-            break;
-
-        case IPC_WIFI_SSID:
-            offset = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_ssid(&(msg[4]), msg[3], offset);
-            break;
-
-        case IPC_WIFI_CONNECT:
-            wifi_connect();
-            break;
-
-        case IPC_WIFI_DISCONNECT:
-            wifi_disconnect();
-            break;
-
-        case IPC_CAMERA_START:
-            camera_enable();
-            break;
-
-        case IPC_CAMERA_STOP:
-            camera_disable();
-            break;
-
-        case IPC_API_TOKEN:
-            offset = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_api_token(&msg[4], msg[3], offset);
-            break;
-
-        case IPC_API_TOKEN_LEN:
-            uint16_t len = (((uint16_t) msg[1]) << 8) | ((uint16_t) msg[2]);
-            wifi_set_api_token_len(len);
-            break;
-
         case IPC_ERROR:
-            printf("IPC Error - %d\n", msg[1]);
+            printf("IPC Error - %d", msg[1]);
             fflush(stdout);
             break;
     }
-    
-    ipc_ack(msg_id);
 
     return ESP_OK;
 }

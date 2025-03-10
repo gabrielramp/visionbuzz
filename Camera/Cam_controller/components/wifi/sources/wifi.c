@@ -25,8 +25,12 @@ static char _identity[WIFI_CREDENTIAL_MAX_LEN + 1] = "au907615";
 static char _username[WIFI_CREDENTIAL_MAX_LEN + 1] = "au907615";
 static char _api_username[WIFI_CREDENTIAL_MAX_LEN + 1] = "a";
 static char _api_password[WIFI_CREDENTIAL_MAX_LEN + 1] = "a";
-static uint8_t _connect = 0;
+static char _access_token[API_TOKEN_MAX_LEN + 1];
+static int  _access_token_len = 0;
+static char _refresh_token[API_TOKEN_MAX_LEN + 1];
+static int  _refresh_token_len = 0;
 
+static uint8_t _connect = 0;
 static bool connected = false;
 static bool got_ip = false;
 
@@ -129,10 +133,70 @@ nvs_set_err:
     return ESP_OK;
 }
 
+static uint8_t http_data[1024];
+static int http_data_len = 0;
+
+static esp_err_t http_store_data(esp_http_client_event_t *evt)
+{
+    strncpy((void *) &(http_data[http_data_len]), evt->data, evt->data_len);
+    http_data_len += evt->data_len;
+    return ESP_OK;
+}
+
+static esp_err_t http_process_data(void)
+{
+    // printf("Processing http data\n");
+    // fflush(stdout);
+
+    for (int i = 0; i < http_data_len; i++)
+    {
+        if (http_data[i] == '\"')
+        {
+            if (strncmp((void *) &(http_data[i]), "\"access_token\"", 14) == 0)
+            {
+                i += 17;
+
+                int access_token_index = 0;
+
+                while (http_data[i] != '\"')
+                {
+                    _access_token[access_token_index++] = http_data[i++];
+                }
+
+                _access_token_len = access_token_index;
+                _access_token[access_token_index] = '\0';
+
+                printf("Access token:  {%.*s...%.*s} (len %d)\n", 16, _access_token, 16, &_access_token[_access_token_len - 16], _access_token_len);
+                fflush(stdout);
+            }
+            else if (strncmp((void *) &(http_data[i]), "\"refresh_token\"", 15) == 0)
+            {
+                i += 18;
+
+                int refresh_token_index = 0;
+
+                while (http_data[i] != '\"')
+                {
+                    _refresh_token[refresh_token_index++] = http_data[i++];
+                }
+                
+                _refresh_token_len = refresh_token_index;
+                _refresh_token[refresh_token_index] = '\0';
+
+                printf("Refresh token: {%.*s...%.*s} (len %d)\n", 16, _refresh_token, 16, &_refresh_token[_refresh_token_len - 16], _refresh_token_len);
+                fflush(stdout);
+            }
+        }
+    }
+
+    http_data_len = 0;
+    return ESP_OK;
+}
+
 static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
-    printf("HTTP event id: %u\n", evt->event_id);
-    fflush(stdout);
+    // printf("HTTP event id: %u\n", evt->event_id);
+    // fflush(stdout);
 
     switch(evt->event_id)
     {
@@ -142,7 +206,12 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
             break;
 
         case HTTP_EVENT_ON_DATA:
-            printf("HTTP data received:\n%.*s", evt->data_len, (char *) evt->data);
+            // printf("HTTP data received:\n%.*s\n", evt->data_len > 256 ? 256 : evt->data_len, (char *) evt->data);
+            http_store_data(evt);
+            break;
+
+        case HTTP_EVENT_ON_FINISH:
+            http_process_data();
             break;
 
         default:
@@ -154,8 +223,8 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 static void ip_event_handler(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    printf("IP event id: %ld\n", event_id);
-    fflush(stdout);
+    // printf("IP event id: %ld\n", event_id);
+    // fflush(stdout);
 
     switch(event_id)
     {
@@ -246,7 +315,7 @@ esp_err_t wifi_init(void)
     {
         printf("Error loading Wifi credentials from NVS: %d\n", err);
         fflush(stdout);
-        return err;
+        // return err;
     }
 
     wifi_init_config_t init_config = WIFI_INIT_CONFIG_DEFAULT();
@@ -284,10 +353,9 @@ esp_err_t wifi_init(void)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len)
+esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len, uint16_t offset)
 {
-    strncpy(_identity, (void *) identity, len);
-    _identity[len] = '\0';
+    strncpy((void *) &(_identity[offset]), (void *) identity, len);
 
     return ESP_OK;
 }
@@ -299,10 +367,9 @@ esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_username(uint8_t *username, uint8_t len)
+esp_err_t wifi_set_username(uint8_t *username, uint8_t len, uint16_t offset)
 {
-    strncpy(_username, (void *) username, len);
-    _username[len] = '\0';
+    strncpy((void *) &(_username[offset]), (void *) username, len);
 
     return ESP_OK;
 }
@@ -314,10 +381,9 @@ esp_err_t wifi_set_username(uint8_t *username, uint8_t len)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_password(uint8_t *password, uint8_t len)
+esp_err_t wifi_set_password(uint8_t *password, uint8_t len, uint16_t offset)
 {
-    strncpy(_password, (void *) password, len);
-    _password[len] = '\0';
+    strncpy((void *) &(_password[offset]), (void *) password, len);
 
     return ESP_OK;
 }
@@ -329,10 +395,9 @@ esp_err_t wifi_set_password(uint8_t *password, uint8_t len)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len)
+esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len, uint16_t offset)
 {
-    strncpy(_ssid, (void *) ssid, len);
-    _ssid[len] = '\0';
+    strncpy((void *) &(_ssid[offset]), (void *) ssid, len);
 
     return ESP_OK;
 }
@@ -345,10 +410,9 @@ esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len)
+esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len, uint16_t offset)
 {
-    strncpy(_api_username, (void *) api_username, len);
-    _api_username[len] = '\0';
+    strncpy((void *) &(_api_username[offset]), (void *) api_username, len);
 
     return ESP_OK;
 }
@@ -361,10 +425,23 @@ esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len)
  * 
  * @returns ESP_OK if successful, an ESP error code if not. 
  */
-esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len)
+esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len, uint16_t offset)
 {
-    strncpy(_api_password, (void *) api_password, len);
-    _api_password[len] = '\0';
+    strncpy((void *) &(_api_password[offset]), (void *) api_password, len);
+
+    return ESP_OK;
+}
+
+esp_err_t wifi_set_api_token(uint8_t *token, uint8_t len, uint16_t offset)
+{
+    strncpy((void *) &(_access_token[offset]), (void *) token, len);
+
+    return ESP_OK;
+}
+
+esp_err_t wifi_set_api_token_len(uint16_t token_len)
+{
+    _access_token_len = token_len;
 
     return ESP_OK;
 }
@@ -418,12 +495,19 @@ esp_err_t wifi_api_login(void)
         return ESP_FAIL;
     }
 
-    err = esp_http_client_perform(http_handle);
-
-    if (err)
+    for (int i = 0; i < 10; i++)
     {
-        printf("HTTP err - %u", err);
-        fflush(stdout);
+        err = esp_http_client_perform(http_handle);
+
+        if (err)
+        {
+            printf("HTTP err - %u", err);
+            fflush(stdout);
+        }
+        else
+        {
+            break;
+        }
     }
 
     printf("Login request sent!\n");
@@ -446,7 +530,7 @@ esp_err_t wifi_connect(void)
 
     strcpy((char *) config.sta.ssid, _ssid);
     strcpy((char *) config.sta.password, _password);
-
+    
     esp_wifi_set_config(WIFI_IF_STA, &config);
 
     esp_eap_client_set_password((const unsigned char *) _password, strlen(_password));
@@ -490,9 +574,10 @@ esp_err_t wifi_connect_cb(void)
 esp_err_t wifi_send_img(camera_fb_t *img)
 {
     const static esp_http_client_config_t http_config = {
-        .url = "http://159.223.99.186/api/v1/test_upload",
+        .url = "http://159.223.99.186/api/v1/upload_image",
         .event_handler = http_event_handler, 
-        .method = HTTP_METHOD_POST
+        .method = HTTP_METHOD_POST,
+        .is_async = false
     };
 
     esp_http_client_handle_t http_handle = esp_http_client_init(&http_config);
@@ -503,8 +588,14 @@ esp_err_t wifi_send_img(camera_fb_t *img)
         fflush(stdout);
         return ESP_FAIL;
     }
+
+    static char auth_header[513];
+
+    strncpy(auth_header, "Bearer ", 7);
+    strncpy(&(auth_header[7]), _access_token, _access_token_len);
     
-    esp_err_t err = esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");
+    esp_err_t err = esp_http_client_set_header(http_handle, "Authorization", &(auth_header[0]));
+    err |= esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");
 
     if (err)
     {
@@ -602,8 +693,18 @@ esp_err_t wifi_print_credentials(void)
 
     if (_password[0] != 0)
         printf("Password: %s\n", _password);
+
+    if (_access_token[0] != 0 && _access_token_len > 0)
+    {
+        if (_access_token_len > 16)
+            printf("API token: {%.*s...%.*s} (len %d)\n", 8, _access_token, 8, &(_access_token[_access_token_len - 8]), _access_token_len);
+        else
+            printf("API token: {%.*s}\n", _access_token_len, _access_token);
+    }
         
     printf("-----------------\n");
+
+    fflush(stdout);
 
     return ESP_OK;
 }

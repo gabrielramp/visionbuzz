@@ -20,13 +20,17 @@
     } \
     }
 
+#define API_TOKEN_MAX_LEN 512
+
 esp_err_t wifi_init(void);
-esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len);
-esp_err_t wifi_set_username(uint8_t *username, uint8_t len);
-esp_err_t wifi_set_password(uint8_t *password, uint8_t len);
-esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len);
-esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len);
-esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len);
+esp_err_t wifi_set_identity(uint8_t *identity, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_username(uint8_t *username, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_password(uint8_t *password, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_ssid(uint8_t *ssid, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_api_username(uint8_t *api_username, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_api_password(uint8_t *api_password, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_api_token(uint8_t *token, uint8_t len, uint16_t offset);
+esp_err_t wifi_set_api_token_len(uint16_t token_len);
 esp_err_t wifi_api_login(void);
 esp_err_t wifi_connect(void);
 esp_err_t wifi_disconnect(void);
