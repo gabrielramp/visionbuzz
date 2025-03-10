@@ -32,9 +32,7 @@ class Config:
 
     # Face Recognition Settings
     YUNET_PATH = os.getenv("YUNET_PATH", "../models/face_detection_yunet_2023mar.onnx")
-    RECOG_PATH = os.getenv("RECOG_PATH", "../models/edgeface_s.onnx")
-
-    
+    RECOG_PATH = os.getenv("RECOG_PATH", "../models/arcface_int8.onnx")
 
     FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.483"))
 
