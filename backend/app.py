@@ -19,7 +19,8 @@ from services.cluster_service import ClusterService
 from services.db_service import DatabaseService
 from services.face_service import FaceService
 from services.password_service import PasswordServive
-from firebase_admin import messaging
+import firebase_admin
+from firebase_admin import credentials, messaging
 
 app = Flask(__name__)
 CORS(app)
@@ -29,6 +30,9 @@ print(f"{config.CLUSTER_RADIUS=}")
 app.config.from_object(config)
 jwt = JWTManager(app)
 
+# FIREBASE SETUP
+cred = credentials.Certificate("firebase-key.json")
+firebase_admin.initialize_app(cred)
 
 cluster_service = ClusterService(config)
 database_service = DatabaseService(config)
