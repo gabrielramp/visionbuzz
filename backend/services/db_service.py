@@ -272,6 +272,7 @@ class DatabaseService:
                 WHERE uid = %s AND cid = %s;
                 """
 
+        print("UPDATECONTAT", query, values)
         with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(query, values)
