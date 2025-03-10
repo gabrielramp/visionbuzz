@@ -149,16 +149,26 @@ def upload_image():
         # print(closest_match)
         # print(f"Found contact {closest_match['name']}, {closest_match['last_seen']}")
 
+        # 'vib_pattern': None
         time_since_last_seen = datetime.now().astimezone() - closest_match["last_seen"]
         # print(time_since_last_seen)
         print(f"hi, should send notif for {closest_match['name']}")
         if user_fb_token is not None and time_since_last_seen > config.NOTIF_COOLDOWN:
             # Notify with cloudflare
+            vib_pattern = (
+                0
+                if closest_match["vib_pattern"] is None
+                else closest_match["vib_pattern"]
+            )
+
             msg = messaging.Message(
                 notification=messaging.Notification(
-                    title="Contact found!",
-                    body=f"You have just looked at {closest_match['name']}",
+                    title="Contact Seen!",
+                    body=f"{closest_match['name']}",
                 ),
+                data={
+                    "vib_pattern": str(vib_pattern),
+                },
                 token=user_fb_token,
             )
             response = messaging.send(msg)
