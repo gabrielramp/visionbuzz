@@ -291,13 +291,13 @@ def pull_timeline():
     return res
 
 
-@app.route("/api/v1/edit_contact", methods=["PATCH"])
+@app.route("/api/v1/edit_contact/<cid>", methods=["PATCH"])
 @jwt_required()
-def edit_contact():
+def edit_contact(cid):
     uid = get_jwt_identity()
     req_params = request.get_json()
 
-    res = database_service.update_contact(uid, req_params)
+    res = database_service.update_contact(uid, cid, req_params)
     if res:
         return jsonify({"message": "Updated successfully"}), 200
     return jsonify({"error": "Contact not updated successfully"}), 404

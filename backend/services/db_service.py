@@ -275,12 +275,7 @@ class DatabaseService:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(query, values)
-
-                cur.fetchall()
-                print(cur)
-                cid = cur
-
-                return True
+            return True
 
         return False
 

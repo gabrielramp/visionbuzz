@@ -136,7 +136,7 @@ Creates a new contact from a cluster of face embeddings.
 - 500: Contact created but failed to clean up cluster
 
 #### Edit Contact
-`PATCH /api/v1/edit_contact`
+`PATCH /api/v1/edit_contact/<cid>`
 
 Updates contact information.
 
@@ -146,7 +146,6 @@ Updates contact information.
 **Request Body:**
 ```json
 {
-    "cid": "integer",
     "name": "string",
     "vib_pattern": "integer"
 }
