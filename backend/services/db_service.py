@@ -347,7 +347,7 @@ class DatabaseService:
                 cur.execute(
                     """
                     INSERT INTO contacts (uid, name, embedding, last_seen)
-                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                    VALUES (%s, %s, %s, '2025-01-01 00:00:00')
                     RETURNING cid;
                     """,
                     (uid, name, str(embedding)),
