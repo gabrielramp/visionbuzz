@@ -15,14 +15,19 @@ import 'themes.dart' as themes;
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 
-var yahoo = "bingo";
 @pragma('vm:entry-point')
-Future<void> handleNotification(RemoteMessage message) async {
+Future<void> handleForegroundNotifications(RemoteMessage message) async {
+  print("Foregrounded");
+  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
+  print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
+  print("ID: ${message.messageId}");
+}
+
+@pragma('vm:entry-point')
+Future<void> handleBackgroundNotifications(RemoteMessage message) async {
   await Firebase.initializeApp();
-  yahoo = "poopoo";
   print("Poopooo");
-  await deviceWidget.DevicePage().writeToVibrator(1);
-  print(message);
+  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
   print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
   print("ID: ${message.messageId}");
 }
@@ -49,7 +54,8 @@ void main() async {
   );
   print('User granted permission: ${settings.authorizationStatus}');
 
-  FirebaseMessaging.onBackgroundMessage(handleNotification);
+  FirebaseMessaging.onBackgroundMessage(handleBackgroundNotifications);
+  FirebaseMessaging.onMessage.listen(handleForegroundNotifications);
 
   // Request permissions for iOS
   print('User granted permission: ${settings.authorizationStatus}');

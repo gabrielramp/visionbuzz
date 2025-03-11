@@ -16,22 +16,22 @@ class DevicePage extends StatelessWidget {
   //   "0002f0de-bc9a-7856-3412-004200000069": null
 
   // };
-  final WIFI_SERVICE_UUID = "0001f0de-bc9a-7856-3412-004200000069";
-  final WIFI_SSID_UUID = "0101f0de-bc9a-7856-3412-004200000069";
-  final WIFI_USERNAME_UUID = "0201f0de-bc9a-7856-3412-004200000069";
-  final WIFI_IDENTITY_UUID = "0301f0de-bc9a-7856-3412-004200000069";
-  final WIFI_PASSWORD_UUID = "0401f0de-bc9a-7856-3412-004200000069";
-  final WIFI_CONNECT_UUID = "0501f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_SERVICE_UUID = "0001f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_SSID_UUID = "0101f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_USERNAME_UUID = "0201f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_IDENTITY_UUID = "0301f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_PASSWORD_UUID = "0401f0de-bc9a-7856-3412-004200000069";
+  static final WIFI_CONNECT_UUID = "0501f0de-bc9a-7856-3412-004200000069";
 
-  final VIBRATOR_SERVICE_UUID = "0000f0de-bc9a-7856-3412-004200000069";
-  final VIBRATOR_CTRL_UUID = "0100f0de-bc9a-7856-3412-004200000069";
+  static final VIBRATOR_SERVICE_UUID = "0000f0de-bc9a-7856-3412-004200000069";
+  static final VIBRATOR_CTRL_UUID = "0100f0de-bc9a-7856-3412-004200000069";
 
-  final API_SERVICE_UUID = "0002f0de-bc9a-7856-3412-004200000069";
-  final API_TOKEN_UUID = "0102f0de-bc9a-7856-3412-004200000069";
+  static final API_SERVICE_UUID = "0002f0de-bc9a-7856-3412-004200000069";
+  static final API_TOKEN_UUID = "0102f0de-bc9a-7856-3412-004200000069";
 
-  final ValueNotifier<bool> _isDeviceConnected = ValueNotifier<bool>(false);
-  final DEVICE_NAME = "August Device";
-  var realDevice;
+  static final ValueNotifier<bool> _isDeviceConnected = ValueNotifier<bool>(false);
+  static final DEVICE_NAME = "August Device";
+  static var realDevice;
   // 3 Services
   // Wifi Service
   // Wifi SSID      - network name? Get that somehow
@@ -43,9 +43,9 @@ class DevicePage extends StatelessWidget {
   // Vibe value - 32 bits for vibe pattern
   // API Service
   // Access Token Characteristic
-  Map<String, BluetoothService> realServices =
+  static Map<String, BluetoothService> realServices =
       new Map<String, BluetoothService>();
-  Map<String, BluetoothCharacteristic> realCharacteristics =
+  static Map<String, BluetoothCharacteristic> realCharacteristics =
       new Map<String, BluetoothCharacteristic>();
   DevicePage({super.key});
 
@@ -69,14 +69,14 @@ class DevicePage extends StatelessWidget {
             realDevice = r.device;
             connectToDevice(realDevice);
             fb.stopScan();
-            device.state.listen((state) {
+            realDevice.state.listen((state) {
               if (state == BluetoothDeviceState.connected) {
-                print("Device connected: ${device.name}");
+                print("Device connected: ${realDevice.name}");
                 // Handle connection success, perform your operations
               } else if (state == BluetoothDeviceState.disconnected) {
-                print("Device disconnected: ${device.name}");
+                print("Device disconnected: ${realDevice.name}");
                 // Handle reconnection logic here if needed
-                reconnectToDevice(device);
+                reconnectToDevice(realDevice);
               }
             });
             // getServices(device);
@@ -205,8 +205,8 @@ class DevicePage extends StatelessWidget {
       print("Done with allat");
         print("Vibration Service: $VIBRATOR_SERVICE_UUID");
         print("Vibration Char: $VIBRATOR_CTRL_UUID");
-        print("Services length: $realServices.length");
-        print("Chars length: $realCharacteristics.length");
+        print("Services length: ${realServices.length}");
+        print("Chars length: ${realCharacteristics.length}");
     BluetoothService vibrationService =
         realServices[VIBRATOR_SERVICE_UUID] as BluetoothService;
       if (vibrationService == null) print("NO VIBRATION SERVICE");

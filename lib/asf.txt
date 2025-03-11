@@ -1,293 +1,348 @@
-{11: 
-[Wed, 05 Mar 2025 22:45:21 GMT, // Standard
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT]
- Wed, 05 Mar 2025 23:15:46 GMT] // New Standard + add
- Wed, 05 Mar 2025 25:45:46 GMT], // 
+// Builtin Dart Stuff
+import 'dart:math';
+import 'dart:convert';
 
- 13: 
-[Wed, 05 Mar 2025 22:46:18 GMT,
- Wed, 05 Mar 2025 22:46:19 GMT,
- Wed, 05 Mar 2025 22:46:20 GMT,
- Wed, 05 Mar 2025 22:46:21 GMT,
- Wed, 05 Mar 2025 22:46:22 GMT,
- Wed, 05 Mar 2025 22:46:23 GMT,
- Wed, 05 Mar 2025 22:46:24 GMT,
- Wed, 05 Mar 2025 22:46:25 GMT,
- Wed, 05 Mar 2025 22:46:26 GMT,
- Wed, 05 Mar 2025 22:46:27 GMT,
- Wed, 05 Mar 2025 22:46:28 GMT,
- Wed, 05 Mar 2025 22:46:29 GMT,
- Wed, 05 Mar 2025 22:46:31 GMT,
- Wed, 05 Mar 2025 22:46:32 GMT],
+// Resource Packages
+import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:timelines_plus/timelines_plus.dart';
+import 'package:http/http.dart' as http;
+import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
- 2: 
-[Wed, 05 Mar 2025 22:07:32 GMT,
- Wed, 05 Mar 2025 22:07:33 GMT,
- Wed, 05 Mar 2025 22:07:34 GMT,
- Wed, 05 Mar 2025 22:07:35 GMT,
- Wed, 05 Mar 2025 22:07:36 GMT,
- Wed, 05 Mar 2025 22:07:38 GMT,
- Wed, 05 Mar 2025 22:07:39 GMT,
- Wed, 05 Mar 2025 22:07:40 GMT,
- Wed, 05 Mar 2025 22:07:41 GMT,
- Wed, 05 Mar 2025 22:07:42 GMT,
- Wed, 05 Mar 2025 22:07:43 GMT,
- Wed, 05 Mar 2025 22:07:44 GMT,
- Wed, 05 Mar 2025 22:07:45 GMT,
- Wed, 05 Mar 2025 22:07:46 GMT,
- Wed, 05 Mar 2025 22:07:47 GMT,
- Wed, 05 Mar 2025 22:08:13 GMT,
- Wed, 05 Mar 2025 22:08:14 GMT,
- Wed, 05 Mar 2025 22:08:15 GMT,
- Wed, 05 Mar 2025 22:08:16 GMT,
- Wed, 05 Mar 2025 22:08:17 GMT,
- Wed, 05 Mar 2025 22:08:18 GMT,
- Wed, 05 Mar 2025 22:08:19 GMT,
- Wed, 05 Mar 2025 22:45:11 GMT,
- Wed, 05 Mar 2025 22:45:12 GMT,
- Wed, 05 Mar 2025 22:45:13 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:53 GMT,
- Wed, 05 Mar 2025 22:45:54 GMT,
- Wed, 05 Mar 2025 22:46:37 GMT,
- Wed, 05 Mar 2025 22:46:38 GMT,
- Wed, 05 Mar 2025 22:46:39 GMT,
- Wed, 05 Mar 2025 22:46:40 GMT,
- Wed, 05 Mar 2025 22:46:41 GMT,
- Wed, 05 Mar 2025 22:46:44 GMT,
- Wed, 05 Mar 2025 22:46:45 GMT],
+// Our onboard stuff
+import 'auth_provider.dart';
 
- 3: 
-[Wed, 05 Mar 2025 22:07:49 GMT,
- Wed, 05 Mar 2025 22:07:50 GMT,
- Wed, 05 Mar 2025 22:07:52 GMT,
- Wed, 05 Mar 2025 22:07:53 GMT,
- Wed, 05 Mar 2025 22:07:54 GMT,
- Wed, 05 Mar 2025 22:07:55 GMT,
- Wed, 05 Mar 2025 22:07:55 GMT,
- Wed, 05 Mar 2025 22:07:57 GMT,
- Wed, 05 Mar 2025 22:07:58 GMT,
- Wed, 05 Mar 2025 22:07:59 GMT,
- Wed, 05 Mar 2025 22:08:00 GMT,
- Wed, 05 Mar 2025 22:08:01 GMT,
- Wed, 05 Mar 2025 22:08:02 GMT,
- Wed, 05 Mar 2025 22:08:03 GMT,
- Wed, 05 Mar 2025 22:08:04 GMT,
- Wed, 05 Mar 2025 22:08:05 GMT,
- Wed, 05 Mar 2025 22:08:06 GMT,
- Wed, 05 Mar 2025 22:08:07 GMT,
- Wed, 05 Mar 2025 22:08:08 GMT,
- Wed, 05 Mar 2025 22:08:09 GMT,
- Wed, 05 Mar 2025 22:08:10 GMT,
- Wed, 05 Mar 2025 22:08:11 GMT,
- Wed, 05 Mar 2025 22:08:12 GMT,
- Wed, 05 Mar 2025 22:46:09 GMT,
- Wed, 05 Mar 2025 22:46:11 GMT,
- Wed, 05 Mar 2025 22:46:11 GMT,
- Wed, 05 Mar 2025 22:46:13 GMT,
- Wed, 05 Mar 2025 22:46:14 GMT],
+class Event {
+  String name;
+  String time;
+  bool seen;
+  Event({required this.name, required this.time, required this.seen});
+}
 
- 4: 
-[Wed, 05 Mar 2025 22:07:49 GMT,
- Wed, 05 Mar 2025 22:07:51 GMT,
- Wed, 05 Mar 2025 22:07:52 GMT,
- Wed, 05 Mar 2025 22:07:53 GMT,
- Wed, 05 Mar 2025 22:07:54 GMT,
- Wed, 05 Mar 2025 22:07:55 GMT,
- Wed, 05 Mar 2025 22:07:57 GMT,
- Wed, 05 Mar 2025 22:07:58 GMT,
- Wed, 05 Mar 2025 22:08:01 GMT,
- Wed, 05 Mar 2025 22:08:02 GMT,
- Wed, 05 Mar 2025 22:08:03 GMT,
- Wed, 05 Mar 2025 22:08:04 GMT,
- Wed, 05 Mar 2025 22:08:05 GMT,
- Wed, 05 Mar 2025 22:08:06 GMT,
- Wed, 05 Mar 2025 22:08:07 GMT,
- Wed, 05 Mar 2025 22:08:08 GMT,
- Wed, 05 Mar 2025 22:08:09 GMT,
- Wed, 05 Mar 2025 22:08:10 GMT,
- Wed, 05 Mar 2025 22:08:11 GMT,
- Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:18 GMT,
- Wed, 05 Mar 2025 22:45:19 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:33 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:36 GMT,
- Wed, 05 Mar 2025 22:45:37 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:42 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:45:48 GMT,
- Wed, 05 Mar 2025 22:45:59 GMT,
- Wed, 05 Mar 2025 22:46:00 GMT,
- Wed, 05 Mar 2025 22:46:00 GMT,
- Wed, 05 Mar 2025 22:46:01 GMT,
- Wed, 05 Mar 2025 22:46:02 GMT,
- Wed, 05 Mar 2025 22:46:03 GMT,
- Wed, 05 Mar 2025 22:46:04 GMT,
- Wed, 05 Mar 2025 22:46:05 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT],
+class newTimelineEntry{
+  int id;
+  DateTime timeSeen;
+  newTimelineEntry({required this.id, required this.timeSeen});
+}
 
- 5: 
-[Wed, 05 Mar 2025 22:07:49 GMT,
- Wed, 05 Mar 2025 22:07:52 GMT,
- Wed, 05 Mar 2025 22:07:53 GMT,
- Wed, 05 Mar 2025 22:07:54 GMT,
- Wed, 05 Mar 2025 22:07:55 GMT,
- Wed, 05 Mar 2025 22:07:58 GMT,
- Wed, 05 Mar 2025 22:07:59 GMT,
- Wed, 05 Mar 2025 22:08:00 GMT,
- Wed, 05 Mar 2025 22:08:01 GMT,
- Wed, 05 Mar 2025 22:08:02 GMT,
- Wed, 05 Mar 2025 22:08:03 GMT,
- Wed, 05 Mar 2025 22:08:04 GMT,
- Wed, 05 Mar 2025 22:08:05 GMT,
- Wed, 05 Mar 2025 22:08:06 GMT,
- Wed, 05 Mar 2025 22:08:07 GMT,
- Wed, 05 Mar 2025 22:08:08 GMT,
- Wed, 05 Mar 2025 22:08:10 GMT,
- Wed, 05 Mar 2025 22:08:11 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:46:01 GMT,
- Wed, 05 Mar 2025 22:46:02 GMT],
+class TimelineEntry {
+  int id;
+  List<String> timesSeen;
+  TimelineEntry({required this.id, required this.timesSeen});
 
- 6: 
-[Wed, 05 Mar 2025 22:07:53 GMT,
- Wed, 05 Mar 2025 22:07:54 GMT,
- Wed, 05 Mar 2025 22:07:58 GMT,
- Wed, 05 Mar 2025 22:07:59 GMT,
- Wed, 05 Mar 2025 22:08:02 GMT,
- Wed, 05 Mar 2025 22:08:05 GMT,
- Wed, 05 Mar 2025 22:08:07 GMT,
- Wed, 05 Mar 2025 22:08:09 GMT,
- Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:18 GMT,
- Wed, 05 Mar 2025 22:45:19 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:36 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:45:48 GMT,
- Wed, 05 Mar 2025 22:45:59 GMT,
- Wed, 05 Mar 2025 22:46:00 GMT,
- Wed, 05 Mar 2025 22:46:01 GMT,
- Wed, 05 Mar 2025 22:46:02 GMT,
- Wed, 05 Mar 2025 22:46:03 GMT,
- Wed, 05 Mar 2025 22:46:05 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT],
+  @override String toString(){
+    return "ID: $id, Times Seen: $timesSeen\n\n";
+  }
+}
+final Map<String, String> months = {
+  "Jan": "01",
+  "Feb": "02",
+  "Mar": "03",
+  "Apr": "04",
+  "May": "05",
+  "Jun": "06",
+  "Jul": "07",
+  "Aug": "08",
+  "Sep": "09",
+  "Oct": "10",
+  "Nov": "11",
+  "Dec": "12",
+};
 
- 7: 
-[Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:18 GMT,
- Wed, 05 Mar 2025 22:45:19 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:36 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:45:48 GMT,
- Wed, 05 Mar 2025 22:45:59 GMT,
- Wed, 05 Mar 2025 22:46:00 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT],
+Future<http.Response> makeGetCall() {
+  return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
+}
 
- 8: 
-[Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:18 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:46:00 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT],
+class HomePage extends StatelessWidget {
+  var authProvider;
+  List<TimelineEntry> wholeTimeline =
+      new List<TimelineEntry>.empty(growable: true);
+  Map<DateTime, List<newTimelineEntry>> newTimeline = new Map<DateTime, List<newTimelineEntry>>();
+  HomePage({super.key});
+  var numDays = Random().nextInt(3) + 5; // Get this from database
+  final ScrollController _controller = ScrollController();
 
- 9: 
-[Wed, 05 Mar 2025 22:45:17 GMT,
- Wed, 05 Mar 2025 22:45:18 GMT,
- Wed, 05 Mar 2025 22:45:19 GMT,
- Wed, 05 Mar 2025 22:45:21 GMT,
- Wed, 05 Mar 2025 22:45:24 GMT,
- Wed, 05 Mar 2025 22:45:26 GMT,
- Wed, 05 Mar 2025 22:45:28 GMT,
- Wed, 05 Mar 2025 22:45:30 GMT,
- Wed, 05 Mar 2025 22:45:32 GMT,
- Wed, 05 Mar 2025 22:45:34 GMT,
- Wed, 05 Mar 2025 22:45:35 GMT,
- Wed, 05 Mar 2025 22:45:36 GMT,
- Wed, 05 Mar 2025 22:45:38 GMT,
- Wed, 05 Mar 2025 22:45:40 GMT,
- Wed, 05 Mar 2025 22:45:41 GMT,
- Wed, 05 Mar 2025 22:45:44 GMT,
- Wed, 05 Mar 2025 22:45:46 GMT,
- Wed, 05 Mar 2025 22:46:07 GMT]}
+  void _defaultToBottom() {
+    _controller.jumpTo(_controller.position.maxScrollExtent);
+  }
+
+  Future<http.Response> getTimeline() async {
+    // List<Contact> contacts = new List.empty();
+    var token = await authProvider.getToken();
+    // print(token);
+    final response = await http.get(
+      Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': ("Bearer $token"),
+      },
+    );
+    if (response.statusCode == 200) {
+      var body = await jsonDecode(response.body);
+      print("Timeline pulled, we ball");
+      print(body);
+      for (var entry in body.entries) {
+        // print(entry.key);
+        // print(entry.value);
+        List<String> timesSeen = new List<String>.empty(growable: true);
+        var timeBuffer = DateTime.utc(2003, 3, 9);
+        for (var time in entry.value) {
+          var tempTime = time.split(" ");
+          tempTime = DateTime.parse("${tempTime[3]}-${months[tempTime[2]]}-${tempTime[1]} ${tempTime[4]}");
+          if(tempTime.difference(timeBuffer).inMinutes > 30)
+          {
+            print(tempTime.difference(timeBuffer).inMinutes);
+            newTimelineEntry tempEntry = new newTimelineEntry(id: int.parse(entry.key), timeSeen: tempTime);
+            newTimeline[tempTime.day].add(tempEntry);
+            timesSeen.add(tempTime.toString());
+            print("ADDED");
+            timeBuffer = tempTime;
+          }
+        }
+        print(timesSeen);
+        var newEntry = new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen);
+        if(!this.wholeTimeline.contains(newEntry)){
+          this.wholeTimeline.add(newEntry);
+        }
+        
+        this.wholeTimeline.add(
+            new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen));
+        print("----------------------------------------------------------");
+      }
+      print(wholeTimeline);
+      print(wholeTimeline.length);
+      // print(body);
+      // var accessToken = jsonDecode(response.body)['access_token'];
+      // print("Specifically access token = " + accessToken);
+      // authProvider.login(accessToken);
+    } else if (response.statusCode == 401) {
+      print("Bad login info");
+      print(jsonDecode(response.body));
+    } else {
+      print("Something unforeseen went wrong");
+      print("Error Code: " + response.statusCode.toString());
+      print(response.body);
+    }
+    return response;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    authProvider = Provider.of<AuthProvider>(context);
+    final List<Event> events = [
+      new Event(name: "Person A", time: "1 PM", seen: true),
+      new Event(name: "Person B", time: "2 PM", seen: false),
+      new Event(name: "Person C", time: "3 PM", seen: false),
+      new Event(name: "Person D", time: "4 PM", seen: true),
+      new Event(name: "Person E", time: "5 PM", seen: true),
+      new Event(name: "Person F", time: "6 PM", seen: false),
+      new Event(name: "Person G", time: "7 PM", seen: false),
+    ];
+
+    print(wholeTimeline);
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: const Text('Timeline'),
+      ),
+      body: FutureBuilder(
+          future: getTimeline(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            return Align(
+                alignment: Alignment.topLeft,
+                child: ListView.builder(
+                  reverse: true,
+                  controller: _controller,
+                  itemCount: numDays,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TimelineSection(
+                          timeline: wholeTimeline), // No SingleChildScrollView needed
+                    );
+                  },
+                ));
+          }),
+    );
+  }
+}
+
+class TimelineSection extends StatelessWidget {
+  var timeline;
+  var authProvider;
+
+  TimelineSection({required this.timeline});
+  @override
+  Widget build(BuildContext context) {
+    ThemeData themey = Theme.of(context);
+
+    ColorScheme colorScheme = themey.colorScheme;
+    authProvider = Provider.of<AuthProvider>(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(0),
+      child: Column(children: [
+        Text(
+          "Date moment",
+          style: TextStyle(
+              fontSize: 42,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.primary),
+        ),
+        FixedTimeline.tileBuilder(
+          theme: TimelineThemeData(
+            nodePosition: 0.025, // Away from left edge, 0-1
+            indicatorTheme:
+                IndicatorThemeData(size: 50, color: colorScheme.secondary),
+            connectorTheme:
+                ConnectorThemeData(thickness: 8, color: colorScheme.primary),
+          ),
+          builder: TimelineTileBuilder.connected(
+            itemCount: Random().nextInt(3) + 3,
+            connectorBuilder: (context, index, type) {
+              return SolidLineConnector(color: colorScheme.primary);
+            },
+            indicatorBuilder: (context, index) {
+              return DotIndicator(
+                color: colorScheme.primary,
+                child: Icon(Icons.circle,
+                    size: 30,
+                    color: colorScheme.primary),
+              );
+            },
+            contentsBuilder: (context, index) {
+              return GestureDetector(
+                  onTap: () {
+                    // if (authProvider.isLoggedIn) {
+                    //   print("All good in the hood (We are logged in)");
+                    // } else {
+                    //   print("You're hosed (not logged in)");
+                    // }
+                    editContact(context, timeline[index]);
+                  },
+                  onDoubleTap: () {
+                    authProvider.logout();
+
+                    print("Double clicked + logged out + ratio");
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, right: 16, bottom: 16.0),
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      width: double.infinity,
+                      height: 150,
+                      child: Column(
+                        children: [
+                          Text(
+                            "New Contact #${timeline[index]}",
+                            style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                          Text(
+                            "Time: ${events[index].time}",
+                            style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.secondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ));
+            },
+          ),
+        ),
+      ]),
+    );
+  } // TimelineSection Widget
+
+  Future<void> editContact(BuildContext context, Event event) async {
+    var canVibe = await Vibration.hasCustomVibrationsSupport();
+    print(canVibe);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return editContactDialog(context: context, event: event);
+      },
+    );
+  }
+
+  void createContact(String cluster_id, String contact_name) async {
+    final response = await http.post(
+      Uri.parse('http://159.223.99.186/api/v1/create_contact'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body:
+          jsonEncode({'cluster_id': cluster_id, 'contact_name': contact_name}),
+    );
+    if (response.statusCode == 200) {
+      // print(response.body);
+      print("createContact PASS");
+    } else if (response.statusCode == 401) {
+      print("Bad call info");
+    } else {
+      print("Something unforeseen went wrong");
+    }
+  }
+} // TimelineSection Class
+
+class editContactDialog extends StatelessWidget {
+  var event;
+  editContactDialog({required context, this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData themey = Theme.of(context);
+    ColorScheme colorScheme = themey.colorScheme;
+    TextTheme textTheme = themey.textTheme;
+
+    return Dialog(
+        child: SizedBox(
+      // color: Colors.red,
+      height: 800,
+      // width: MediaQuery.of(context).size.width,
+      child: Column(children: [
+        Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: Row(
+              children: [
+                Container(
+                    margin: const EdgeInsets.only(right: 5),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey,
+                    ),
+                    child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(
+                          Icons.person,
+                          size: 70,
+                          color: colorScheme.secondary,
+                        ))),
+                Expanded(
+                    child: TextField(
+                  controller: TextEditingController(text: event.name),
+                  style: textTheme.headlineMedium,
+                )),
+                ElevatedButton(
+                    onPressed: () => {HapticFeedback.vibrate()},
+                    child: Text("Vibes"))
+              ],
+            ))
+      ]),
+    ));
+  }
+}

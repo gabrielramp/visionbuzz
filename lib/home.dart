@@ -4,184 +4,427 @@ import 'dart:convert';
 
 // Resource Packages
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 // Our onboard stuff
 import 'auth_provider.dart';
 
-class Event {
-  String name;
-  String time;
-  bool seen;
-  Event({required this.name, required this.time, required this.seen});
+class Contact {
+  final int cid;
+  final String name;
+  Contact({required this.cid, required this.name});
+
+  @override
+  String toString() {
+    return "name: $name, cid: $cid";
+  }
 }
 
 class TimelineEntry {
-  int id;
-  List<String> timesSeen;
-  TimelineEntry({required this.id, required this.timesSeen});
-
-  @override String toString(){
-    return "ID: $id, Times Seen: $timesSeen\n\n";
+  final String clusterId;
+  final List<String> timesSeen;
+  String name;
+  
+  TimelineEntry({required this.clusterId, required this.timesSeen, this.name = "Unknown Person"});
+  
+  // Get the most recent time this person was seen
+  DateTime getLatestTime() {
+    if (timesSeen.isEmpty) return DateTime.now();
+    
+    List<DateTime> dates = [];
+    for (String timestamp in timesSeen) {
+      try {
+        // Try to parse the timestamp in multiple formats
+        dates.add(parseTimestamp(timestamp));
+      } catch (e) {
+        print("Error parsing timestamp: $timestamp - $e");
+      }
+    }
+    
+    if (dates.isEmpty) return DateTime.now();
+    
+    dates.sort((a, b) => b.compareTo(a)); // Sort descending
+    return dates.first;
   }
-}
-final Map<String, String> months = {
-  "Jan": "01",
-  "Feb": "02",
-  "Mar": "03",
-  "Apr": "04",
-  "May": "05",
-  "Jun": "06",
-  "Jul": "07",
-  "Aug": "08",
-  "Sep": "09",
-  "Oct": "10",
-  "Nov": "11",
-  "Dec": "12",
-};
-
-Future<http.Response> makeGetCall() {
-  return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
-}
-
-class HomePage extends StatelessWidget {
-  var authProvider;
-  List<TimelineEntry> wholeTimeline =
-      new List<TimelineEntry>.empty(growable: true);
-
-  HomePage({super.key});
-  var numDays = Random().nextInt(3) + 5; // Get this from database
-  final ScrollController _controller = ScrollController();
-
-  void _defaultToBottom() {
-    _controller.jumpTo(_controller.position.maxScrollExtent);
+  
+  // Format time for display
+  String getFormattedTime() {
+    DateTime latest = getLatestTime();
+    return DateFormat('h:mm a').format(latest);
   }
-
-  Future<http.Response> getTimeline() async {
-    // List<Contact> contacts = new List.empty();
-    var token = await authProvider.getToken();
-    // print(token);
-    final response = await http.get(
-      Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': ("Bearer $token"),
-      },
-    );
-    if (response.statusCode == 200) {
-      var body = await jsonDecode(response.body);
-      print("Timeline pulled, we ball");
-      print(body);
-      for (var entry in body.entries) {
-        // print(entry.key);
-        // print(entry.value);
-        List<String> timesSeen = new List<String>.empty(growable: true);
-        var timeBuffer = DateTime.utc(2003, 3, 9);
-        for (var time in entry.value) {
-          var tempTime = time.split(" ");
-          tempTime = DateTime.parse("${tempTime[3]}-${months[tempTime[2]]}-${tempTime[1]} ${tempTime[4]}");
-          if(tempTime.difference(timeBuffer).inMinutes > 30)
-          {
-            print(tempTime.difference(timeBuffer).inMinutes);
-            timesSeen.add(tempTime.toString());
-            print("ADDED");
-            timeBuffer = tempTime;
+  
+  // Get the date string for grouping
+  String getDateString() {
+    DateTime latest = getLatestTime();
+    return DateFormat('yyyy-MM-dd').format(latest);
+  }
+  
+  // Helper method to parse timestamps in different formats including RFC 822/RFC 1123
+  DateTime parseTimestamp(String timestamp) {
+    // Try different parsing approaches
+    try {
+      // Standard ISO format
+      return DateTime.parse(timestamp);
+    } catch (_) {
+      try {
+        // Try Unix timestamp (milliseconds)
+        return DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
+      } catch (_) {
+        try {
+          // Try Unix timestamp (seconds)
+          return DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp) * 1000);
+        } catch (_) {
+          try {
+            // Try RFC 822/RFC 1123 format: "Tue, 11 Mar 2025 00:21:53 GMT"
+            return DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'").parse(timestamp);
+          } catch (_) {
+            try {
+              // Try custom format: "YYYY-MM-DD HH:MM:SS"
+              return DateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
+            } catch (e) {
+              print("Failed to parse timestamp: $timestamp");
+              throw FormatException("Invalid date format: $timestamp");
+            }
           }
         }
-        print(timesSeen);
-        var newEntry = new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen);
-        if(!this.wholeTimeline.contains(newEntry)){
-          this.wholeTimeline.add(newEntry);
-
-        }
-        
-        this.wholeTimeline.add(
-            new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen));
-        print("----------------------------------------------------------");
       }
-      print(wholeTimeline);
-      print(wholeTimeline.length);
-      // print(body);
-      // var accessToken = jsonDecode(response.body)['access_token'];
-      // print("Specifically access token = " + accessToken);
-      // authProvider.login(accessToken);
-    } else if (response.statusCode == 401) {
-      print("Bad login info");
-      print(jsonDecode(response.body));
-    } else {
-      print("Something unforeseen went wrong");
-      print("Error Code: " + response.statusCode.toString());
-      print(response.body);
     }
-    return response;
+  }
+}
+
+class DayTimeline {
+  final String date;
+  final List<TimelineEntry> entries;
+  
+  DayTimeline({required this.date, required this.entries});
+  
+  // Get a formatted date string for display
+  String getFormattedDate() {
+    try {
+      DateTime dateTime = DateTime.parse(date);
+      return DateFormat('EEEE, MMMM d').format(dateTime);
+    } catch (e) {
+      // Fallback if date can't be parsed
+      return date;
+    }
+  }
+}
+
+class HomePage extends StatefulWidget {
+  HomePage({super.key});
+  
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late AuthProvider authProvider;
+  bool isLoading = true;
+  String errorMessage = '';
+  List<DayTimeline> dayTimelines = [];
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadTimeline();
+    });
+  }
+
+  void _scrollToBottom() {
+    if (_controller.hasClients) {
+      _controller.animateTo(
+        _controller.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  Future<void> loadTimeline() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      await getTimeline();
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading timeline: $e");
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error loading timeline: $e';
+      });
+    }
+  }
+
+  Future<void> getTimeline() async {
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
+    var token = await authProvider.getToken();
+    
+    if (token == null) {
+      print("Not logged in, can't fetch timeline");
+      setState(() {
+        errorMessage = 'Not logged in. Please log in to view your timeline.';
+      });
+      return;
+    }
+    
+    print("Using token: $token");
+    
+    try {
+      final response = await http.get(
+        Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': "Bearer $token",
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        print("API Response: ${response.body}");
+        Map<String, dynamic> body = jsonDecode(response.body);
+        print("Timeline pulled successfully");
+        
+        // Process timeline data
+        Map<String, List<TimelineEntry>> entriesByDate = {};
+        
+        body.forEach((clusterId, timestamps) {
+          // Handle timestamps correctly - they might be a List<dynamic>
+          List<String> timesList = [];
+          if (timestamps is List) {
+            timesList = timestamps.map((t) => t.toString()).toList();
+          } else if (timestamps is String) {
+            // If it's a single string, put it in a list
+            timesList = [timestamps];
+          }
+          
+          // Skip if no valid timestamps
+          if (timesList.isEmpty) return;
+          
+          TimelineEntry entry = TimelineEntry(
+            clusterId: clusterId,
+            timesSeen: timesList,
+            name: "Person $clusterId", // Default name with cluster ID
+          );
+          
+          try {
+            // Group by date
+            String dateKey = entry.getDateString();
+            
+            if (!entriesByDate.containsKey(dateKey)) {
+              entriesByDate[dateKey] = [];
+            }
+            
+            entriesByDate[dateKey]!.add(entry);
+          } catch (e) {
+            print("Error processing entry: $e");
+          }
+        });
+        
+        // Convert to DayTimeline objects
+        List<DayTimeline> timelines = [];
+        entriesByDate.forEach((date, entries) {
+          // Sort entries by latest time
+          entries.sort((a, b) => 
+            b.getLatestTime().compareTo(a.getLatestTime()));
+          
+          timelines.add(DayTimeline(
+            date: date,
+            entries: entries,
+          ));
+        });
+        
+        // Sort days by most recent first
+        timelines.sort((a, b) => b.date.compareTo(a.date));
+        
+        setState(() {
+          dayTimelines = timelines;
+        });
+        
+      } else if (response.statusCode == 401) {
+        print("Authentication error");
+        String errorBody = response.body;
+        try {
+          var errorJson = jsonDecode(response.body);
+          errorBody = errorJson.toString();
+        } catch (_) {}
+        
+        setState(() {
+          errorMessage = "Authentication error: $errorBody";
+        });
+      } else {
+        print("Something unforeseen went wrong");
+        print("Error Code: ${response.statusCode}");
+        print(response.body);
+        
+        setState(() {
+          errorMessage = "Error ${response.statusCode}: ${response.body}";
+        });
+      }
+    } catch (e) {
+      print("Exception during API call: $e");
+      setState(() {
+        errorMessage = "Error connecting to server: $e";
+      });
+    }
+  }
+
+  Future<void> createContact(String clusterId, String name) async {
+    authProvider = Provider.of<AuthProvider>(context, listen: false);
+    var token = await authProvider.getToken();
+    
+    if (token == null) {
+      print("Not logged in, can't create contact");
+      return;
+    }
+    
+    try {
+      final response = await http.post(
+        Uri.parse('http://159.223.99.186/api/v1/create_contact'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': "Bearer $token",
+        },
+        body: jsonEncode({
+          'cluster_id': clusterId, 
+          'contact_name': name
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        print("Contact created successfully");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Contact "$name" created successfully!'))
+        );
+        // Refresh the timeline after creating a contact
+        await loadTimeline();
+      } else if (response.statusCode == 401) {
+        print("Authentication error");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Authentication error. Please log in again.'))
+        );
+      } else {
+        print("Failed to create contact");
+        print("Error Code: ${response.statusCode}");
+        print(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create contact: ${response.body}'))
+        );
+      }
+    } catch (e) {
+      print("Exception creating contact: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating contact: $e'))
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    authProvider = Provider.of<AuthProvider>(context);
-    final List<Event> events = [
-      new Event(name: "Person A", time: "1 PM", seen: true),
-      new Event(name: "Person B", time: "2 PM", seen: false),
-      new Event(name: "Person C", time: "3 PM", seen: false),
-      new Event(name: "Person D", time: "4 PM", seen: true),
-      new Event(name: "Person E", time: "5 PM", seen: true),
-      new Event(name: "Person F", time: "6 PM", seen: false),
-      new Event(name: "Person G", time: "7 PM", seen: false),
-    ];
-
-    print(wholeTimeline);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         title: const Text('Timeline'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: loadTimeline,
+          ),
+        ],
       ),
-      body: FutureBuilder(
-          future: getTimeline(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            return Align(
-                alignment: Alignment.topLeft,
-                child: ListView.builder(
-                  reverse: true,
-                  controller: _controller,
-                  itemCount: numDays,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: TimelineSection(
-                          events: events), // No SingleChildScrollView needed
-                    );
-                  },
-                ));
-          }),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : errorMessage.isNotEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        SizedBox(height: 16),
+                        Text(
+                          errorMessage,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: loadTimeline,
+                          child: Text('Try Again'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : dayTimelines.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.timeline_outlined, size: 64, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'No timeline data available',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: loadTimeline,
+                            child: Text('Refresh'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _controller,
+                      itemCount: dayTimelines.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TimelineSection(
+                            dayTimeline: dayTimelines[index],
+                            onNameContact: (clusterId, name) => 
+                              createContact(clusterId, name),
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 }
 
 class TimelineSection extends StatelessWidget {
-  var events;
-  var authProvider;
+  final DayTimeline dayTimeline;
+  final Function(String, String) onNameContact;
 
-  TimelineSection({required this.events});
+  TimelineSection({
+    required this.dayTimeline,
+    required this.onNameContact,
+  });
+
   @override
   Widget build(BuildContext context) {
     ThemeData themey = Theme.of(context);
-
     ColorScheme colorScheme = themey.colorScheme;
-    authProvider = Provider.of<AuthProvider>(context);
 
     return Padding(
-      padding: const EdgeInsets.all(0),
+      padding: const EdgeInsets.all(8.0),
       child: Column(children: [
         Text(
-          "Date moment",
+          dayTimeline.getFormattedDate(),
           style: TextStyle(
-              fontSize: 42,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
               color: colorScheme.primary),
         ),
@@ -189,39 +432,28 @@ class TimelineSection extends StatelessWidget {
           theme: TimelineThemeData(
             nodePosition: 0.025, // Away from left edge, 0-1
             indicatorTheme:
-                IndicatorThemeData(size: 50, color: colorScheme.secondary),
+                IndicatorThemeData(size: 30, color: colorScheme.secondary),
             connectorTheme:
-                ConnectorThemeData(thickness: 8, color: colorScheme.primary),
+                ConnectorThemeData(thickness: 5, color: colorScheme.primary),
           ),
           builder: TimelineTileBuilder.connected(
-            itemCount: Random().nextInt(3) + 3,
+            itemCount: dayTimeline.entries.length,
             connectorBuilder: (context, index, type) {
               return SolidLineConnector(color: colorScheme.primary);
             },
             indicatorBuilder: (context, index) {
               return DotIndicator(
                 color: colorScheme.primary,
-                child: Icon(Icons.circle,
-                    size: 30,
-                    color: events[index].seen
-                        ? colorScheme.secondary
-                        : colorScheme.primary),
+                child: Icon(Icons.person,
+                    size: 20,
+                    color: colorScheme.secondary),
               );
             },
             contentsBuilder: (context, index) {
+              TimelineEntry entry = dayTimeline.entries[index];
               return GestureDetector(
                   onTap: () {
-                    // if (authProvider.isLoggedIn) {
-                    //   print("All good in the hood (We are logged in)");
-                    // } else {
-                    //   print("You're hosed (not logged in)");
-                    // }
-                    editContact(context, events[index]);
-                  },
-                  onDoubleTap: () {
-                    authProvider.logout();
-
-                    print("Double clicked + logged out + ratio");
+                    editContactDialog(context, entry);
                   },
                   behavior: HitTestBehavior.translucent,
                   child: Padding(
@@ -234,21 +466,28 @@ class TimelineSection extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       width: double.infinity,
-                      height: 150,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            events[index].name,
+                            entry.name,
                             style: TextStyle(
-                                fontSize: 42,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white),
                           ),
+                          const SizedBox(height: 8),
                           Text(
-                            "Time: ${events[index].time}",
+                            "Last seen: ${entry.getFormattedTime()}",
                             style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: colorScheme.secondary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Times seen today: ${entry.timesSeen.length}",
+                            style: TextStyle(
+                                fontSize: 16,
                                 color: colorScheme.secondary),
                           ),
                         ],
@@ -260,84 +499,81 @@ class TimelineSection extends StatelessWidget {
         ),
       ]),
     );
-  } // TimelineSection Widget
+  }
 
-  Future<void> editContact(BuildContext context, Event event) async {
-    var canVibe = await Vibration.hasCustomVibrationsSupport();
-    print(canVibe);
+  Future<void> editContactDialog(BuildContext context, TimelineEntry entry) async {
+    String newName = entry.name;
+    
     return showDialog<void>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return editContactDialog(context: context, event: event);
-      },
-    );
-  }
-
-  void createContact(String cluster_id, String contact_name) async {
-    final response = await http.post(
-      Uri.parse('http://159.223.99.186/api/v1/create_contact'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body:
-          jsonEncode({'cluster_id': cluster_id, 'contact_name': contact_name}),
-    );
-    if (response.statusCode == 200) {
-      // print(response.body);
-      print("createContact PASS");
-    } else if (response.statusCode == 401) {
-      print("Bad call info");
-    } else {
-      print("Something unforeseen went wrong");
-    }
-  }
-} // TimelineSection Class
-
-class editContactDialog extends StatelessWidget {
-  var event;
-  editContactDialog({required context, this.event});
-
-  @override
-  Widget build(BuildContext context) {
-    ThemeData themey = Theme.of(context);
-    ColorScheme colorScheme = themey.colorScheme;
-    TextTheme textTheme = themey.textTheme;
-
-    return Dialog(
-        child: SizedBox(
-      // color: Colors.red,
-      height: 800,
-      // width: MediaQuery.of(context).size.width,
-      child: Column(children: [
-        Padding(
-            padding: EdgeInsets.only(top: 20),
-            child: Row(
+        return AlertDialog(
+          title: Text('Name This Person'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                    margin: const EdgeInsets.only(right: 5),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey,
+                Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey.shade300,
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
                     ),
-                    child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(
-                          Icons.person,
-                          size: 70,
-                          color: colorScheme.secondary,
-                        ))),
-                Expanded(
-                    child: TextField(
-                  controller: TextEditingController(text: event.name),
-                  style: textTheme.headlineMedium,
-                )),
-                ElevatedButton(
-                    onPressed: () => {HapticFeedback.vibrate()},
-                    child: Text("Vibes"))
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(text: entry.name),
+                        decoration: InputDecoration(
+                          labelText: 'Person Name',
+                          hintText: 'Enter a name for this person',
+                        ),
+                        onChanged: (value) {
+                          newName = value;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Cluster ID: ${entry.clusterId}',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                Text(
+                  'Times seen: ${entry.timesSeen.length}',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ],
-            ))
-      ]),
-    ));
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: Text('Save'),
+              onPressed: () {
+                // Save the contact name
+                entry.name = newName;
+                onNameContact(entry.clusterId, newName);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
