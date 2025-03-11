@@ -9,7 +9,8 @@ import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 
 class SettingsPage extends StatelessWidget {
-  SettingsPage({super.key});
+  final String fbToken;
+  SettingsPage({super.key, required this.fbToken});
   var authProvider;
 
   final List<String> settingsHeaders = <String>[
@@ -51,7 +52,7 @@ class SettingsPage extends StatelessWidget {
                     clickedMe(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => AccountScreen(header: "Login"),
+                        builder: (context) => AccountScreen(header: "Login", fbToken:this.fbToken),
                       ),
                     );
                   },
@@ -65,7 +66,7 @@ class SettingsPage extends StatelessWidget {
                     clickedMe(context);
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => AccountScreen(header: "Register"),
+                        builder: (context) => AccountScreen(header: "Register", fbToken:this.fbToken),
                       ),
                     );
                   },
@@ -172,20 +173,23 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-final _formKey = GlobalKey<FormState>();
+final _formKey = GlobalKey<FormState>(); // CJ - Check this out later
 
 class AccountScreen extends StatelessWidget {
   final String header;
   var authProvider;
+  final String fbToken;
 
-  void register(String username, String password) async {
+  AccountScreen({required this.header, required this.fbToken});
+
+  void register(String username, String password, String token) async {
     final response = await http.post(
       Uri.parse('http://159.223.99.186/api/v1/register'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(
-          <String, String>{'username': username, 'password': password}),
+          <String, String>{'username': username, 'password': password, 'firebase_token': token}),
     );
     if (response.statusCode == 200) {
       // print(response.body);
@@ -222,7 +226,6 @@ class AccountScreen extends StatelessWidget {
     }
   }
 
-  AccountScreen({required this.header});
   @override
   Widget build(BuildContext context) {
     String username = "";
@@ -260,6 +263,7 @@ class AccountScreen extends StatelessWidget {
                         },
                       ),
                       TextFormField(
+                        obscureText: true,
                         decoration: const InputDecoration(
                           hintText: 'Enter your password',
                         ),
@@ -279,7 +283,7 @@ class AccountScreen extends StatelessWidget {
                           onPressed: () {
                             _formKey.currentState?.save();
                             if (this.header == "Register") {
-                              register(username, pwd);
+                              register(username, pwd, fbToken);
                               print("Pushed da register button");
                             } else {
                               login(username, pwd);

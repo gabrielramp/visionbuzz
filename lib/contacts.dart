@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart';
 
 import 'themes.dart' as themes;
 import 'auth_provider.dart';
@@ -36,6 +37,7 @@ class ContactsPage extends StatelessWidget {
   var authService;
   var authProvider;
   int numSections = 0;
+  bool loaded = false;
   List<Contact> contacts = new List<Contact>.empty(growable: true);
   Map<String, int> letters = {
     'A': 0,
@@ -69,6 +71,10 @@ class ContactsPage extends StatelessWidget {
   Map<String, int> filledLetters = new Map<String, int>();
 
   Future<http.Response> getContacts() async {
+    if (loaded)
+      return new Future<http.Response>.value(
+          new http.Response("Already loaded", 200));
+    loaded = true;
     var token = await authProvider.getToken();
     print(token);
     final response = await http.get(
@@ -79,15 +85,17 @@ class ContactsPage extends StatelessWidget {
       },
     );
     if (response.statusCode == 200) {
+    print("CONTACTS HERE");
+    print(response.body);
       List<dynamic> body = await jsonDecode(response.body);
-      print("All good");
+      // print("All good");
       for (dynamic contact in body) {
         this.contacts.add(new Contact(
             cid: contact['cid'],
-            name: contact['name'],
+            name: contact['name'] == "" ? "Unnamed Contact" : contact['name'],
             last_seen: contact['last_seen']));
         //letters.add
-        String firstLetter = contact['name'].trim()[0].toUpperCase();
+        String firstLetter = (contact['name'] == "" ? "Unnamed Contact" : contact['name']).trim()[0].toUpperCase();
         if (letters[firstLetter] != null) if (letters[firstLetter] == 0)
           numSections += 1;
         letters[firstLetter] = (letters[firstLetter] ?? 0) + 1;
@@ -105,24 +113,6 @@ class ContactsPage extends StatelessWidget {
     }
     this.contacts.sort(contactComparison);
     return response;
-  }
-
-    void editContact(int cid, String name, int vib_pattern) async {
-    final response = await http.patch(
-      Uri.parse('http://159.223.99.186/api/v1/edit_contact'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode({'cid': cid, 'name': name, 'vib_pattern': vib_pattern}),
-    );
-    if (response.statusCode == 200) {
-      // print(response.body);
-      print("editContact PASS");
-    } else if (response.statusCode == 401) {
-      print("Bad call info");
-    } else {
-      print("Something unforeseen went wrong");
-    }
   }
 
   int contactComparison(Contact a, Contact b) {
@@ -153,11 +143,9 @@ class ContactsPage extends StatelessWidget {
             future: getContacts(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               return Align(
-                  alignment: Alignment.topLeft,
-                  child: GestureDetector(
-                    onTap: () => print(this.contacts),
-                    child: alphabetSections(context),
-                  ));
+                alignment: Alignment.topLeft,
+                child: alphabetSections(context),
+              );
             }));
   }
 
@@ -202,7 +190,11 @@ class ContactsPage extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       itemCount: contactsInSection,
       itemBuilder: (BuildContext context, int index) {
-        return contactRow(context, contacts[bigIndex].name);
+        return GestureDetector(
+            onTap: () {
+              editContactPopup(context, contacts[bigIndex]);
+            },
+            child: contactRow(context, contacts[bigIndex].name));
       },
       separatorBuilder: (BuildContext context, int index) => Divider(
         color: colorScheme.primary,
@@ -223,11 +215,97 @@ class ContactsPage extends StatelessWidget {
           widthFactor: 1,
           child: Align(
             alignment: Alignment.centerLeft,
+            child: Container(
+                color: colorScheme.secondary,
+                child: Row(
+                  children: [
+                    Container(
+                        height: 75,
+                        margin: const EdgeInsets.only(right: 20),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey,
+                        ),
+                        child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Icon(
+                              Icons.person,
+                              size: 70,
+                              color: colorScheme.secondary,
+                            ))),
+                    Text(
+                      name,
+                      style: textTheme.headlineSmall,
+                    )
+                  ],
+                )),
+          ),
+        ));
+  }
+
+  Future<void> editContactPopup(BuildContext context, Contact contact) async {
+    var canVibe = await Vibration.hasCustomVibrationsSupport();
+    print(canVibe);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return editContactDialog(context: context, contact: contact);
+      },
+    );
+  }
+} // TimelineSection Class
+
+class editContactDialog extends StatelessWidget {
+  var authProvider;
+
+  void editContact(int cid, String name, int vib_pattern) async {
+    var token = await authProvider.getToken();
+    print("Params: $cid, $name, $vib_pattern");
+    final response = await http.patch(
+      Uri.parse("http://159.223.99.186/api/v1/edit_contact/$cid"),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': ('Bearer ' + token),
+      },
+      body: jsonEncode({'name': name, 'vib_pattern': vib_pattern}),
+    );
+    if (response.statusCode == 200) {
+      print(response.body);
+      print("editContact PASS");
+    } else if (response.statusCode == 404) {
+      print(response.body);
+      print("Bad call info");
+    } else {
+      print(response.statusCode);
+      print("Something unforeseen went wrong");
+    }
+  }
+
+  var contact;
+  editContactDialog({required context, this.contact});
+  String namey = "";
+  int vibePattern = 0;
+  @override
+  Widget build(BuildContext context) {
+    namey = contact.name;
+    authProvider = Provider.of<AuthProvider>(context);
+    ThemeData themey = Theme.of(context);
+    ColorScheme colorScheme = themey.colorScheme;
+    TextTheme textTheme = themey.textTheme;
+
+    return Dialog(
+        child: SizedBox(
+      // color: Colors.red,
+      height: 800,
+      // width: MediaQuery.of(context).size.width,
+      child: Column(children: [
+        Padding(
+            padding: EdgeInsets.only(top: 20),
             child: Row(
               children: [
                 Container(
-                    height: 75,
-                    margin: const EdgeInsets.only(right: 20),
+                    margin: const EdgeInsets.only(right: 5),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey,
@@ -239,21 +317,38 @@ class ContactsPage extends StatelessWidget {
                           size: 70,
                           color: colorScheme.secondary,
                         ))),
-                Text(
-                  name,
-                  style: textTheme.headlineSmall,
-                )
+                Expanded(
+                    child: TextFormField(
+                  controller: TextEditingController(text: contact.name),
+                  style: textTheme.headlineMedium,
+                  onChanged: (value) {
+                    namey = value ?? '';
+                  },
+                )),
+                Expanded(
+                    child: TextFormField(
+                  controller: TextEditingController(text: contact.vibration),
+                  style: textTheme.headlineMedium,
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    vibePattern = int.parse(value as String) ?? 0;
+                  },
+                )),
+                ElevatedButton(
+                    onPressed: () =>
+                        {editContact(contact.cid, namey, vibePattern)},
+                    child: Text("Vibes"))
               ],
-            ),
-          ),
-        ));
+            ))
+      ], mainAxisSize: MainAxisSize.max),
+    ));
   }
   // Widget contactRow(BuildContext context, String name) {
   //   ColorScheme colorScheme = Theme.of(context).colorScheme;
   //   return SizedBox(
   //     // color: Colors.blue,
   //     height: 100,
-  //     // width: MediaQuery.of(context).size.width,
+  //     // width: MediaQuery.of(context). size.width,
   //     child: Align(
   //       alignment: Alignment.centerLeft,
   //       child: Row(

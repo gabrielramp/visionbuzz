@@ -20,7 +20,7 @@ class Event {
   String time;
   bool seen;
   Event({required this.name, required this.time, required this.seen});
-}
+} 
 
 class TimelineEntry{
   int id;
@@ -52,15 +52,17 @@ class HomePage extends StatelessWidget {
       Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': ('Bearer ' + token),
+        'Authorization': ("Bearer $token"),
       },
     );
     if (response.statusCode == 200) {
       var body = await jsonDecode(response.body);
       print("Timeline pulled, we ball");
+      print(body);
       for(var entry in body.entries){
         print(entry.key);
         print(entry.value);
+        // wholeTimeline.add(new TimelineEntry(id: int.parse(entry.key), timesSeen: entry.value));
         print("----------------------------------------------------------");
       }
       // print(body);
@@ -116,11 +118,12 @@ class HomePage extends StatelessWidget {
 class TimelineSection extends StatelessWidget {
   var events;
   var authProvider;
+
   TimelineSection({required this.events});
   @override
   Widget build(BuildContext context) {
     ThemeData themey = Theme.of(context);
-
+    
     ColorScheme colorScheme = themey.colorScheme;
     authProvider = Provider.of<AuthProvider>(context);
 
@@ -222,7 +225,7 @@ class TimelineSection extends StatelessWidget {
       },
     );
   }
-  void createContact(String cluster_id, String contact_name) async {
+   void createContact(String cluster_id, String contact_name) async {
     final response = await http.post(
       Uri.parse('http://159.223.99.186/api/v1/create_contact'),
       headers: {
