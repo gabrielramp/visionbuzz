@@ -173,7 +173,7 @@ def upload_image():
                 # Add APNS configuration for high priority
                 apns=messaging.APNSConfig(
                     headers={
-                        "apns-priority": "10",  # 10 is highest priority, 5 is normal
+                        "apns-priority": "10",  # 10 is highest priority
                         "apns-push-type": "alert",
                     },
                     payload=messaging.APNSPayload(
@@ -183,9 +183,8 @@ def upload_image():
                             ),
                             sound="default",
                             badge=1,
-                            # Use time-sensitive or critical for high priority
-                            # Note: critical requires Apple entitlement
-                            interruption_level="time-sensitive",
+                            # Ensure "mutable-content" is set to allow for modification in the app
+                            mutable_content=1,
                         )
                     ),
                 ),
