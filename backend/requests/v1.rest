@@ -12,8 +12,8 @@ Content-Type: application/json
 ###
 
 # POST http://127.0.0.1:5000/api/v1/register
-POST http://127.0.0.1:5000/api/v1/login
-# POST http://159.223.99.186/api/v1/login
+# POST http://127.0.0.1:5000/api/v1/login
+POST http://159.223.99.186/api/v1/login
 Content-Type: application/json
 
 {
@@ -41,10 +41,13 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 
 ### Get contacts
-# GET http://159.223.99.186/api/v1/pull_contacts
-GET http://127.0.0.1:5000/api/v1/pull_contacts
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTYzNzA4NiwianRpIjoiZDY2ZGEyMWQtMmFjZC00ZjBhLThlNDktZjcyYmMwMzU1NjkzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NDE2MzcwODYsImNzcmYiOiIxNjc1ZThkMi1lYmU5LTQzYjctYTI5ZC0wYzgwMzgwOWRkMjEiLCJleHAiOjE3NDE2NDA2ODZ9.jJMrBQ86xdB2Reod5aVN7IrINNT9UfaE6tPArJxdxbc
+GET http://159.223.99.186/api/v1/pull_contacts
+# GET http://127.0.0.1:5000/api/v1/pull_contacts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTY1MDQwNSwianRpIjoiNjk0MzA5NDktZjA2My00ZWI2LTk2ZDUtNmM0YWE3ZjM4NDI1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjE4IiwibmJmIjoxNzQxNjUwNDA1LCJjc3JmIjoiOGUzNjYwYmQtNWUxNC00MmMwLWFhOGEtM2I2NDg3YzljMThhIiwiZXhwIjoxNzQxNjU0MDA1fQ.EiyPGSwyMRU7G56r7nAR7-v7pXYBPqzPq-D0kc2kkAQ
 
+### Get timeline
+GET http://159.223.99.186/api/v1/pull_timeline
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTczMjU3OSwianRpIjoiNjYzNTMyMzktNTY5YS00ZmViLTllYWUtMjRkM2I4NjBlODNmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjE4IiwibmJmIjoxNzQxNzMyNTc5LCJjc3JmIjoiMDU2MGYzYjYtNzIxMy00NmY3LTk0ZWUtMDFlZTUzMDUxMTlhIiwiZXhwIjoxNzQxNzM2MTc5fQ.hAqs8T_oc4czGOtu06vjnKrZfCugEwQw6UV3EsQypfY
 
 ### Try to update a contact
 # PATCH http://159.223.99.186/api/v1/edit_contact/5

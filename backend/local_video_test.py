@@ -35,6 +35,7 @@ def authenticate_with_test_user():
     response = requests.post(
         f"{SERVER_URL}/api/v1/login",
         json={"username": "newAccountTest", "password": "newAccountTest"},
+        # json={"username": "test6", "password": "test6"},
     )
     if response.status_code != 200:
         raise Exception(
