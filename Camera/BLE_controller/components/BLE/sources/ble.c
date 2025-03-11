@@ -54,6 +54,13 @@ static bool wifi_connect = false;
 
 static uint8_t api_token[513];
 
+esp_err_t led_write_cb(uint16_t len, uint16_t offset)
+{
+    (*led_get_pulse_counter()) = 8;
+
+    return ESP_OK;
+}
+
 esp_err_t wifi_username_write_cb(uint16_t len, uint16_t offset)
 {
     return ipc_wifi_set_username(&(wifi_username[offset]), len, offset);
@@ -84,12 +91,12 @@ esp_err_t wifi_connect_write_cb(uint16_t len, uint16_t offset)
 
 esp_err_t api_token_write_cb(uint16_t len, uint16_t offset)
 {
-    while (len > 255)
+    while (len > 128)
     {
-        ipc_api_set_token(api_token, 255, offset);
+        ipc_api_set_token(api_token, 128, offset);
 
-        len -= 255;
-        offset += 255;
+        len -= 128;
+        offset += 128;
     }
     
     ipc_api_set_token(&(api_token[offset]), (uint8_t) len, offset);
@@ -215,6 +222,8 @@ esp_err_t ble_init_interface()
 
     err = ble_create_characteristic(ble_services[0].handle, &vibrator_ctrl_uuid, (void *) led_get_ble_val(), 4, &ble_services[0].characteristics[0]);
     ERR_CHECK(err);
+    
+    ble_services[0].characteristics[0].write_cb = led_write_cb;
 
     // Create the Wi-Fi connection service
     err = ble_create_service(&wifi_srvc_id, 50, &(ble_services[1]));
@@ -396,9 +405,9 @@ void ble_gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_ga
 
             esp_ble_conn_update_params_t ble_conn_update_params = {
                 .max_int = 80, // 100 ms
-                .min_int = 80, // 100 ms
-                .latency = 49, // 5s disconnected
-                .timeout = 1000, // 10s
+                .min_int = 10, // 100 ms
+                .latency = 99, // 5s disconnected
+                .timeout = 2000, // 10s
                 .bda = {
                     evt_param->remote_bda[0], 
                     evt_param->remote_bda[1], 
@@ -489,11 +498,11 @@ static esp_ble_adv_data_t ble_adv_data = {
     .min_interval = 0x20,
     .max_interval = 0x40,
     .appearance = 0x00,
-    .manufacturer_len = 15,
+    .manufacturer_len = 7,
     .service_data_len = 0,
     .service_uuid_len = 0,
     .p_service_uuid = NULL,
-    .p_manufacturer_data = (uint8_t *) "August Druzgal",
+    .p_manufacturer_data = (uint8_t *) "August",
     .p_service_data = NULL,
     .flag = ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT
 };

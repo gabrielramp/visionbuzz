@@ -713,3 +713,8 @@ bool wifi_is_ready(void)
 {
     return connected && got_ip;
 }
+
+bool api_is_ready(void)
+{
+    return (_access_token_len > 0);
+}

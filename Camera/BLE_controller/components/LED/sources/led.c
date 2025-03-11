@@ -14,7 +14,9 @@ uint8_t pulse_counter = 0;
 
 void led_task_fn(void *args)
 {
-    gpio_set_level(14, 0);
+    led_init(20);
+
+    led_off(20);
 
     while (true)
     {
@@ -22,19 +24,18 @@ void led_task_fn(void *args)
         // printf("Task is alive\n");
         // fflush(stdout);
 
-        continue;
         if (pulse_counter != 0)
         {
-            gpio_set_level(14, 1);
+            led_on(20);
             vTaskDelay(pdMS_TO_TICKS(led_ble_val % 2 == 1 ? PULSE_MS_1 : PULSE_MS_0));
-            gpio_set_level(14, 0);
+            led_off(20);
             vTaskDelay(pdMS_TO_TICKS(PULSE_MS_PAUSE));
             led_ble_val >>= 1;
             pulse_counter--;
         }
         else
         {
-            gpio_set_level(14, 0);
+            led_off(20);
             vTaskDelay(pdMS_TO_TICKS(100));
         }
     }

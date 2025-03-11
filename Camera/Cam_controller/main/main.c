@@ -71,10 +71,10 @@ void app_main(void)
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
 
-    wifi_set_api_username((uint8_t *)"test7", 5, 0);
-    wifi_set_api_password((uint8_t *)"test7", 5, 0);
+    // wifi_set_api_username((uint8_t *)"test7", 5, 0);
+    // wifi_set_api_password((uint8_t *)"test7", 5, 0);
 
-    wifi_api_login();
+    // wifi_api_login();
     
     vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -84,7 +84,7 @@ void app_main(void)
     {
         // wifi_print_credentials();
 
-        if (wifi_is_ready())
+        if (wifi_is_ready() && api_is_ready())
         {
             img = camera_get_img();
     

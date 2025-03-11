@@ -36,9 +36,6 @@ void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(250));
 
-    /*led_init(14);
-    led_off(14);*/
-
     ble_init();
     
     /*
@@ -83,6 +80,11 @@ void app_main(void)
     
     printf("Initialization successful\n");
     fflush(stdout);
+
+    while (true)
+    {
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
 
     // vTaskStartScheduler();
 }

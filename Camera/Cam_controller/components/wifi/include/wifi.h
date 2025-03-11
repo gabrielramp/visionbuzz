@@ -39,5 +39,6 @@ esp_err_t wifi_send_img(camera_fb_t *img);
 esp_err_t wifi_ping(void);
 esp_err_t wifi_print_credentials(void);
 bool wifi_is_ready(void);
+bool api_is_ready(void);
 
 #endif
