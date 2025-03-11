@@ -4,6 +4,7 @@ import os
 from datetime import datetime, timedelta
 from PIL import Image
 
+from time import time
 import numpy as np
 from settings import get_config
 from flask import Flask, jsonify, request
@@ -168,6 +169,10 @@ def upload_image():
                 ),
                 data={
                     "vib_pattern": str(vib_pattern),
+                    "title": "Contact Seen!",  # Duplicate notification content in data
+                    "body": f"{closest_match['name']}",
+                    "message_type": "background_message",  # Add a marker to identify this message
+                    "timestamp": str(int(time.time())),  # Add timestamp for tracking
                 },
                 token=user_fb_token,
                 # Add APNS configuration for high priority
@@ -183,6 +188,7 @@ def upload_image():
                             ),
                             sound="default",
                             badge=1,
+                            content_available=True,
                             # Ensure "mutable-content" is set to allow for modification in the app
                             mutable_content=1,
                         )
