@@ -5,39 +5,22 @@ POST http://127.0.0.1:5000/api/v1/login
 Content-Type: application/json
 
 {
-    "username": "test6",
-    "password": "test6"
+    "username": "test8",
+    "password": "test8"
 }
 
 ###
 
-POST http://127.0.0.1:5000/api/v1/register
+# POST http://127.0.0.1:5000/api/v1/register
+POST http://127.0.0.1:5000/api/v1/login
+# POST http://159.223.99.186/api/v1/login
 Content-Type: application/json
 
 {
-    "username": "test6",
-    "password": "test6"
+    "username": "newAccountTest",
+    "password": "newAccountTest"
 }
 
-### Actual server register
-
-POST http://159.223.99.186/api/v1/register
-Content-Type: application/json
-
-{
-    "username": "test6",
-    "password": "test6"
-}
-
-### Actual server login
-
-POST https://159.223.99.186/api/v1/login
-Content-Type: application/json
-
-{
-    "username": "test6",
-    "password": "test6"
-}
 
 ### New test local image upload
 
@@ -54,4 +37,21 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 {
     "cluster_id": "123",
     "contact_name": "John Doe"
+}
+
+
+### Get contacts
+# GET http://159.223.99.186/api/v1/pull_contacts
+GET http://127.0.0.1:5000/api/v1/pull_contacts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTYzNzA4NiwianRpIjoiZDY2ZGEyMWQtMmFjZC00ZjBhLThlNDktZjcyYmMwMzU1NjkzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NDE2MzcwODYsImNzcmYiOiIxNjc1ZThkMi1lYmU5LTQzYjctYTI5ZC0wYzgwMzgwOWRkMjEiLCJleHAiOjE3NDE2NDA2ODZ9.jJMrBQ86xdB2Reod5aVN7IrINNT9UfaE6tPArJxdxbc
+
+
+### Try to update a contact
+# PATCH http://159.223.99.186/api/v1/edit_contact/5
+PATCH http://127.0.0.1:5000/api/v1/edit_contact/5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MTYzNzA4NiwianRpIjoiZDY2ZGEyMWQtMmFjZC00ZjBhLThlNDktZjcyYmMwMzU1NjkzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3NDE2MzcwODYsImNzcmYiOiIxNjc1ZThkMi1lYmU5LTQzYjctYTI5ZC0wYzgwMzgwOWRkMjEiLCJleHAiOjE3NDE2NDA2ODZ9.jJMrBQ86xdB2Reod5aVN7IrINNT9UfaE6tPArJxdxbc
+Content-Type: application/json
+
+{
+    "name": "guy"
 }

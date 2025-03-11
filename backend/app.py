@@ -171,7 +171,6 @@ def upload_image():
                     "vib_pattern": str(vib_pattern),
                     "title": "Contact Seen!",  # Duplicate notification content in data
                     "body": f"{closest_match['name']}",
-                    "message_type": "background_message",  # Add a marker to identify this message
                 },
                 token=user_fb_token,
                 # Add APNS configuration for high priority

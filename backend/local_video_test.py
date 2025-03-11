@@ -27,20 +27,25 @@ warnings.filterwarnings("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 
 # Server configuration
-SERVER_URL = "http://127.0.0.1:5000"  # Local server
-# SERVER_URL = "http://159.223.99.186"  # Online server
+# SERVER_URL = "http://127.0.0.1:5000"  # Local server
+SERVER_URL = "http://159.223.99.186"  # Online server
 
 
 def authenticate_with_test_user():
     response = requests.post(
         f"{SERVER_URL}/api/v1/login",
-        json={"username": "test6", "password": "test6"},
+        json={"username": "newAccountTest", "password": "newAccountTest"},
     )
     if response.status_code != 200:
         raise Exception(
             f"Authentication failed: {response.json().get('msg', 'Unknown error')}"
         )
 
+    # print(response)
+    # print(response.json())
+    print(f"Status code: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print(f"Response content: {response.text}")
     # Only print a short version of the token to confirm authentication
     token = response.json()["access_token"]
     print(f"Authenticated successfully (token: ...{token[-10:]})")
@@ -51,7 +56,7 @@ def init_camera():
     """Initialize camera with error handling and platform-specific settings"""
     try:
         # Try different camera indices if the default doesn't work
-        for camera_index in [1, 2]:
+        for camera_index in [0, 2]:
             cap = cv2.VideoCapture(camera_index)
             if cap.isOpened():
                 # Set frame dimensions
@@ -117,12 +122,18 @@ try:
             last_upload_time = current_time
 
             try:
+                # Time each step of the process
+                t_start = time.time()
+
                 # Convert BGR to RGB and then to JPEG bytes
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                t_convert = time.time()
+
                 pil_img = Image.fromarray(rgb_frame)
                 img_byte_arr = io.BytesIO()
                 pil_img.save(img_byte_arr, format="JPEG")
                 img_byte_arr = img_byte_arr.getvalue()
+                t_encode = time.time()
 
                 # Send request to server
                 response = requests.post(
@@ -133,6 +144,15 @@ try:
                         "Authorization": f"Bearer {access_token}",
                     },
                 )
+                t_upload = time.time()
+
+                # Print timing breakdown
+                print(f"\nTiming breakdown:")
+                print(f"Color conversion: {(t_convert - t_start)*1000:.1f}ms")
+                print(f"JPEG encoding: {(t_encode - t_convert)*1000:.1f}ms")
+                print(f"Network upload: {(t_upload - t_encode)*1000:.1f}ms")
+                print(f"Total time: {(t_upload - t_start)*1000:.1f}ms")
+                print(f"Image size: {len(img_byte_arr)/1024:.1f}KB")
 
                 # Only print errors, not successful responses
                 if response.status_code != 200:
@@ -160,6 +180,17 @@ try:
             print(f"Pulled {len(clusters)} clusters")
             for cluster_id, timestamps in clusters.items():
                 print(f"Cluster {cluster_id}: {len(timestamps)}")
+        if key == ord("o"):
+            # Pull contacts
+            response = requests.get(
+                f"{SERVER_URL}/api/v1/pull_contacts",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            contacts = response.json()
+            print(contacts)
+            # print(f"Pulled {len(clusters)} clusters")
+            # for cluster_id, timestamps in clusters.items():
+            #     print(f"Cluster {cluster_id}: {len(timestamps)}")
         elif key == ord("r"):
             print("Refreshing connection...")
             try:

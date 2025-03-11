@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     cid         serial PRIMARY KEY,
     uid         integer REFERENCES users(uid) ON DELETE CASCADE ,     
     name        varchar NOT NULL,
-    vib_pattern integer,           -- TODO: design how this works!
+    vib_pattern integer,           -- TODO: design how this works! (32 bit integer)
     embedding   vector(512) NOT NULL, 
     last_seen   timestamptz NOT NULL
 );
