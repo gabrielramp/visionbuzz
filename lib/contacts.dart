@@ -1,25 +1,57 @@
-import 'dart:ffi';
-import 'dart:math';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 
-import 'themes.dart' as themes;
 import 'auth_provider.dart';
-import 'auth_service.dart';
-//stupidmanthing
-//imfuckingballing
+
+// Improved cache with alphabetical organization
+class ContactsCache {
+  static List<Contact> contacts = [];
+  static Map<String, List<Contact>> contactsByLetter = {};
+  static List<String> orderedLetters = [];
+  static bool loaded = false;
+  
+  // To force FutureBuilder to rebuild with a new Future
+  static int refreshCounter = 0;
+  
+  // Call this to force a refresh
+  static void invalidate() {
+    loaded = false;
+    // Increment counter to force new Future creation
+    refreshCounter++;
+  }
+  
+  // Organize contacts by first letter
+  static void organizeByLetter() {
+    contactsByLetter.clear();
+    orderedLetters.clear();
+    
+    // Sort contacts alphabetically by name
+    contacts.sort((a, b) => a.name.compareTo(b.name));
+    
+    // Group contacts by first letter
+    for (var contact in contacts) {
+      String firstLetter = contact.name.trim()[0].toUpperCase();
+      if (!contactsByLetter.containsKey(firstLetter)) {
+        contactsByLetter[firstLetter] = [];
+        orderedLetters.add(firstLetter);
+      }
+      contactsByLetter[firstLetter]!.add(contact);
+    }
+    
+    // Sort letters alphabetically
+    orderedLetters.sort();
+  }
+}
 
 class Contact {
   int cid;
   String last_seen;
   String name;
   var vibration;
-  Contact({required this.cid, required this.name, required this.last_seen});
+  Contact({required this.cid, required this.name, required this.last_seen, required this.vibration});
 
   @override
   String toString() {
@@ -32,51 +64,37 @@ class Contact {
   }
 }
 
-class ContactsPage extends StatelessWidget {
-  ContactsPage({super.key});
-  var authService;
-  var authProvider;
-  int numSections = 0;
-  bool loaded = false;
-  List<Contact> contacts = new List<Contact>.empty(growable: true);
-  Map<String, int> letters = {
-    'A': 0,
-    'B': 0,
-    'C': 0,
-    'D': 0,
-    'E': 0,
-    'F': 0,
-    'G': 0,
-    'H': 0,
-    'I': 0,
-    'J': 0,
-    'K': 0,
-    'L': 0,
-    'M': 0,
-    'N': 0,
-    'O': 0,
-    'P': 0,
-    'Q': 0,
-    'R': 0,
-    'S': 0,
-    'T': 0,
-    'U': 0,
-    'V': 0,
-    'W': 0,
-    'X': 0,
-    'Y': 0,
-    'Z': 0,
-    '?': 0
-  };
-  Map<String, int> filledLetters = new Map<String, int>();
+class ContactsPage extends StatefulWidget {
+  ContactsPage({Key? key}) : super(key: key);
+  
+  @override
+  _ContactsPageState createState() => _ContactsPageState();
+}
 
+class _ContactsPageState extends State<ContactsPage> {
+  var authProvider;
+  // This key will change whenever we need to refresh the FutureBuilder
+  late Key _futureBuilderKey;
+  
+  @override
+  void initState() {
+    super.initState();
+    _futureBuilderKey = ValueKey(ContactsCache.refreshCounter);
+  }
+
+  // This will create a new Future each time it's called
   Future<http.Response> getContacts() async {
-    if (loaded)
-      return new Future<http.Response>.value(
-          new http.Response("Already loaded", 200));
-    loaded = true;
+    // If data is already loaded, no need to reload
+    if (ContactsCache.loaded && ContactsCache.contacts.isNotEmpty) {
+      return Future<http.Response>.value(
+          http.Response("Already loaded", 200));
+    }
+    
+    // Always clear data before loading - this prevents duplicates
+    ContactsCache.contacts = [];
+    
     var token = await authProvider.getToken();
-    print(token);
+    print("Fetching contacts with token: $token");
     final response = await http.get(
       Uri.parse('http://159.223.99.186/api/v1/pull_contacts'),
       headers: <String, String>{
@@ -84,25 +102,25 @@ class ContactsPage extends StatelessWidget {
         'Authorization': ('Bearer ' + token),
       },
     );
+    
     if (response.statusCode == 200) {
-    print("CONTACTS HERE");
-    print(response.body);
-      List<dynamic> body = await jsonDecode(response.body);
-      // print("All good");
+      print("CONTACTS HERE");
+      print(response.body);
+      List<dynamic> body = jsonDecode(response.body);
+      
       for (dynamic contact in body) {
-        this.contacts.add(new Contact(
+        var contactName = contact['name'] == "" ? "Unnamed Contact" : contact['name'];
+        
+        ContactsCache.contacts.add(Contact(
             cid: contact['cid'],
-            name: contact['name'] == "" ? "Unnamed Contact" : contact['name'],
-            last_seen: contact['last_seen']));
-        //letters.add
-        String firstLetter = (contact['name'] == "" ? "Unnamed Contact" : contact['name']).trim()[0].toUpperCase();
-        if (letters[firstLetter] != null) if (letters[firstLetter] == 0)
-          numSections += 1;
-        letters[firstLetter] = (letters[firstLetter] ?? 0) + 1;
+            name: contactName,
+            last_seen: contact['last_seen'],
+            vibration: contact['vib_pattern']));
       }
-      // var accessToken = jsonDecode(response.body)['access_token'];
-      // print("Specifically access token = " + accessToken);
-      // authProvider.login(accessToken);
+      
+      // Organize contacts by first letter for proper display
+      ContactsCache.organizeByLetter();
+      ContactsCache.loaded = true;
     } else if (response.statusCode == 401) {
       print("Bad login info");
       print(jsonDecode(response.body));
@@ -111,69 +129,104 @@ class ContactsPage extends StatelessWidget {
       print("Error Code: " + response.statusCode.toString());
       print(response.body);
     }
-    this.contacts.sort(contactComparison);
+    
     return response;
   }
 
-  int contactComparison(Contact a, Contact b) {
-    String aname = a.name;
-    String bname = b.name;
-    return aname.compareTo(bname);
+  // Added function to delete a contact
+  Future<bool> deleteContact(int cid) async {
+    var token = await authProvider.getToken();
+    
+    final response = await http.delete(
+      Uri.parse("http://159.223.99.186/api/v1/delete_contact/$cid"),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': ('Bearer ' + token),
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      print("deleteContact PASS");
+      // Invalidate cache after successful deletion
+      ContactsCache.invalidate();
+      return true;
+    } else {
+      print("Delete failed: ${response.statusCode}");
+      return false;
+    }
   }
 
-  final String customizableLeadingString = "What";
-  final int maxContacts = 10;
+  // Method to refresh UI - now updates state
+  void refreshUI() {
+    setState(() {
+      // Update the key to force FutureBuilder to rebuild with a new Future
+      _futureBuilderKey = ValueKey(ContactsCache.refreshCounter);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     authProvider = Provider.of<AuthProvider>(context);
-    // if (authProvider.isLoggedIn) {
-    //   getContacts();
-    //   print(this.contacts);
-    // }
     ThemeData themey = Theme.of(context);
-    ColorScheme colorScheme = themey.colorScheme;
-    // this.contacts = getContacts();
+    
     return Scaffold(
         appBar: AppBar(
           title: const Text('Contacts'),
           centerTitle: false,
+          // Simple refresh button that forces reload
+          actions: [
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: () {
+                ContactsCache.invalidate();
+                refreshUI();
+              },
+            )
+          ],
         ),
         body: FutureBuilder(
+            key: _futureBuilderKey, // This is crucial for refresh to work
             future: getContacts(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting && 
+                  ContactsCache.contacts.isEmpty) {
+                return Center(child: CircularProgressIndicator());
+              }
               return Align(
                 alignment: Alignment.topLeft,
                 child: alphabetSections(context),
               );
             }));
   }
-
+  
+  // Completely revised UI methods to properly display alphabetical sections
   Widget alphabetSections(BuildContext context) {
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
-    print(this.numSections);
+    
+    if (ContactsCache.contacts.isEmpty) {
+      return Center(child: Text("No contacts found", style: textTheme.headlineMedium));
+    }
+    
     return ListView.separated(
       shrinkWrap: true,
       padding: const EdgeInsets.all(8),
-      itemCount: this.numSections,
+      itemCount: ContactsCache.orderedLetters.length,
       itemBuilder: (BuildContext context, int index) {
+        String letter = ContactsCache.orderedLetters[index];
+        List<Contact> contactsInSection = ContactsCache.contactsByLetter[letter] ?? [];
+        
         return Column(
-            // height: 50,
-            // color: Colors.amber[colorCodes[index]],
             children: [
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  contacts[index].name.trim()[0].toUpperCase(),
+                  letter,
                   style: textTheme.headlineMedium,
                 ),
               ),
-              letterContacts(
-                  context,
-                  (letters[contacts[index].name.trim()[0].toUpperCase()] ?? 0),
-                  index)
+              contactsForLetter(context, letter, contactsInSection)
             ]);
       },
       separatorBuilder: (BuildContext context, int index) =>
@@ -181,20 +234,25 @@ class ContactsPage extends StatelessWidget {
     );
   }
 
-  Widget letterContacts(
-      BuildContext context, int contactsInSection, int bigIndex) {
+  Widget contactsForLetter(
+      BuildContext context, String letter, List<Contact> contactsInSection) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(8),
-      itemCount: contactsInSection,
+      itemCount: contactsInSection.length,
       itemBuilder: (BuildContext context, int index) {
+        Contact contact = contactsInSection[index];
         return GestureDetector(
             onTap: () {
-              editContactPopup(context, contacts[bigIndex]);
+              editContactPopup(context, contact);
             },
-            child: contactRow(context, contacts[bigIndex].name));
+            onLongPress: () {
+              // Show delete confirmation on long press
+              showDeleteConfirmation(context, contact);
+            },
+            child: contactRow(context, contact.name));
       },
       separatorBuilder: (BuildContext context, int index) => Divider(
         color: colorScheme.primary,
@@ -207,9 +265,7 @@ class ContactsPage extends StatelessWidget {
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
     return SizedBox(
-        // color: Colors.red,
         height: 100,
-        // width: MediaQuery.of(context).size.width,
         child: FractionallySizedBox(
           heightFactor: 1,
           widthFactor: 1,
@@ -243,121 +299,211 @@ class ContactsPage extends StatelessWidget {
         ));
   }
 
-  Future<void> editContactPopup(BuildContext context, Contact contact) async {
-    var canVibe = await Vibration.hasCustomVibrationsSupport();
-    print(canVibe);
+  // Added delete confirmation dialog
+  Future<void> showDeleteConfirmation(BuildContext context, Contact contact) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: true, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return editContactDialog(context: context, contact: contact);
+        return AlertDialog(
+          title: Text('Delete Contact'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete ${contact.name}?'),
+                Text('This action cannot be undone.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                // Delete the contact
+                bool success = await deleteContact(contact.cid);
+                Navigator.of(context).pop();
+                
+                if (success) {
+                  // Cache is already invalidated in deleteContact()
+                  refreshUI();
+                  
+                  // Show success feedback
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Contact deleted successfully'))
+                  );
+                }
+              },
+            ),
+          ],
+        );
       },
     );
   }
-} // TimelineSection Class
 
-class editContactDialog extends StatelessWidget {
-  var authProvider;
+  Future<void> editContactPopup(BuildContext context, Contact contact) async {
+    var result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return EditContactDialog(
+          contact: contact,
+          authProvider: authProvider,
+          onSuccess: () {
+            // Immediately refresh after successful edit
+            refreshUI();
+          },
+        );
+      },
+    );
+  }
+}
 
-  void editContact(int cid, String name, int vib_pattern) async {
-    var token = await authProvider.getToken();
-    print("Params: $cid, $name, $vib_pattern");
+// Improved dialog that handles its own API calls and returns success status
+class EditContactDialog extends StatefulWidget {
+  final Contact contact;
+  final authProvider;
+  final Function onSuccess;
+  
+  EditContactDialog({
+    required this.contact, 
+    required this.authProvider,
+    required this.onSuccess,
+  });
+  
+  @override
+  _EditContactDialogState createState() => _EditContactDialogState();
+}
+
+class _EditContactDialogState extends State<EditContactDialog> {
+  late TextEditingController nameController;
+  late TextEditingController vibrationController;
+  bool isSaving = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.contact.name);
+    vibrationController = TextEditingController(
+      text: widget.contact.vibration != null ? widget.contact.vibration.toString() : "0"
+    );
+  }
+  
+  @override
+  void dispose() {
+    nameController.dispose();
+    vibrationController.dispose();
+    super.dispose();
+  }
+  
+  Future<void> saveContact() async {
+    setState(() {
+      isSaving = true;
+    });
+    
+    String name = nameController.text;
+    int vibPattern = int.tryParse(vibrationController.text) ?? 0;
+    
+    var token = await widget.authProvider.getToken();
+    print("Params: ${widget.contact.cid}, $name, $vibPattern");
+    
     final response = await http.patch(
-      Uri.parse("http://159.223.99.186/api/v1/edit_contact/$cid"),
+      Uri.parse("http://159.223.99.186/api/v1/edit_contact/${widget.contact.cid}"),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': ('Bearer ' + token),
       },
-      body: jsonEncode({'name': name, 'vib_pattern': vib_pattern}),
+      body: jsonEncode({'name': name, 'vib_pattern': vibPattern}),
     );
+    
+    setState(() {
+      isSaving = false;
+    });
+    
     if (response.statusCode == 200) {
-      print(response.body);
       print("editContact PASS");
-    } else if (response.statusCode == 404) {
-      print(response.body);
-      print("Bad call info");
+      // Invalidate cache after successful edit
+      ContactsCache.invalidate();
+      
+      // Call onSuccess callback before dismissing dialog
+      widget.onSuccess();
+      
+      // Close the dialog
+      Navigator.of(context).pop(true);
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Contact updated successfully'))
+      );
     } else {
-      print(response.statusCode);
-      print("Something unforeseen went wrong");
+      print("Edit failed: ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update contact'))
+      );
     }
   }
-
-  var contact;
-  editContactDialog({required context, this.contact});
-  String namey = "";
-  int vibePattern = 0;
+  
   @override
   Widget build(BuildContext context) {
-    namey = contact.name;
-    authProvider = Provider.of<AuthProvider>(context);
     ThemeData themey = Theme.of(context);
     ColorScheme colorScheme = themey.colorScheme;
     TextTheme textTheme = themey.textTheme;
 
     return Dialog(
-        child: SizedBox(
-      // color: Colors.red,
-      height: 800,
-      // width: MediaQuery.of(context).size.width,
-      child: Column(children: [
-        Padding(
-            padding: EdgeInsets.only(top: 20),
-            child: Row(
-              children: [
-                Container(
+      child: SizedBox(
+        height: 800,
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                children: [
+                  Container(
                     margin: const EdgeInsets.only(right: 5),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey,
                     ),
                     child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(
-                          Icons.person,
-                          size: 70,
-                          color: colorScheme.secondary,
-                        ))),
-                Expanded(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(
+                        Icons.person,
+                        size: 70,
+                        color: colorScheme.secondary,
+                      )
+                    )
+                  ),
+                  Expanded(
                     child: TextFormField(
-                  controller: TextEditingController(text: contact.name),
-                  style: textTheme.headlineMedium,
-                  onChanged: (value) {
-                    namey = value ?? '';
-                  },
-                )),
-                Expanded(
+                      controller: nameController,
+                      style: textTheme.headlineMedium,
+                    )
+                  ),
+                  Expanded(
                     child: TextFormField(
-                  controller: TextEditingController(text: contact.vibration),
-                  style: textTheme.headlineMedium,
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    vibePattern = int.parse(value as String) ?? 0;
-                  },
-                )),
-                ElevatedButton(
-                    onPressed: () =>
-                        {editContact(contact.cid, namey, vibePattern)},
-                    child: Text("Vibes"))
-              ],
-            ))
-      ], mainAxisSize: MainAxisSize.max),
-    ));
+                      controller: vibrationController,
+                      style: textTheme.headlineMedium,
+                      keyboardType: TextInputType.number,
+                    )
+                  ),
+                  isSaving 
+                    ? CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: saveContact,
+                        child: Text("Save")
+                      )
+                ],
+              )
+            )
+          ], 
+          mainAxisSize: MainAxisSize.max
+        ),
+      )
+    );
   }
-  // Widget contactRow(BuildContext context, String name) {
-  //   ColorScheme colorScheme = Theme.of(context).colorScheme;
-  //   return SizedBox(
-  //     // color: Colors.blue,
-  //     height: 100,
-  //     // width: MediaQuery.of(context). size.width,
-  //     child: Align(
-  //       alignment: Alignment.centerLeft,
-  //       child: Row(
-  //         children: [
-  //           Icon(Icons.person, size: 100, color: colorScheme.secondary),
-  //           Text(name)
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 }

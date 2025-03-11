@@ -20,13 +20,31 @@ class Event {
   String time;
   bool seen;
   Event({required this.name, required this.time, required this.seen});
-} 
+}
 
-class TimelineEntry{
+class TimelineEntry {
   int id;
   List<String> timesSeen;
   TimelineEntry({required this.id, required this.timesSeen});
+
+  @override String toString(){
+    return "ID: $id, Times Seen: $timesSeen\n\n";
+  }
 }
+final Map<String, String> months = {
+  "Jan": "01",
+  "Feb": "02",
+  "Mar": "03",
+  "Apr": "04",
+  "May": "05",
+  "Jun": "06",
+  "Jul": "07",
+  "Aug": "08",
+  "Sep": "09",
+  "Oct": "10",
+  "Nov": "11",
+  "Dec": "12",
+};
 
 Future<http.Response> makeGetCall() {
   return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
@@ -34,7 +52,8 @@ Future<http.Response> makeGetCall() {
 
 class HomePage extends StatelessWidget {
   var authProvider;
-  List<TimelineEntry> wholeTimeline = new List<TimelineEntry>.empty(growable: true); 
+  List<TimelineEntry> wholeTimeline =
+      new List<TimelineEntry>.empty(growable: true);
 
   HomePage({super.key});
   var numDays = Random().nextInt(3) + 5; // Get this from database
@@ -47,7 +66,7 @@ class HomePage extends StatelessWidget {
   Future<http.Response> getTimeline() async {
     // List<Contact> contacts = new List.empty();
     var token = await authProvider.getToken();
-    print(token);
+    // print(token);
     final response = await http.get(
       Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
       headers: <String, String>{
@@ -59,12 +78,35 @@ class HomePage extends StatelessWidget {
       var body = await jsonDecode(response.body);
       print("Timeline pulled, we ball");
       print(body);
-      for(var entry in body.entries){
-        print(entry.key);
-        print(entry.value);
-        // wholeTimeline.add(new TimelineEntry(id: int.parse(entry.key), timesSeen: entry.value));
+      for (var entry in body.entries) {
+        // print(entry.key);
+        // print(entry.value);
+        List<String> timesSeen = new List<String>.empty(growable: true);
+        var timeBuffer = DateTime.utc(2003, 3, 9);
+        for (var time in entry.value) {
+          var tempTime = time.split(" ");
+          tempTime = DateTime.parse("${tempTime[3]}-${months[tempTime[2]]}-${tempTime[1]} ${tempTime[4]}");
+          if(tempTime.difference(timeBuffer).inMinutes > 30)
+          {
+            print(tempTime.difference(timeBuffer).inMinutes);
+            timesSeen.add(tempTime.toString());
+            print("ADDED");
+            timeBuffer = tempTime;
+          }
+        }
+        print(timesSeen);
+        var newEntry = new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen);
+        if(!this.wholeTimeline.contains(newEntry)){
+          this.wholeTimeline.add(newEntry);
+
+        }
+        
+        this.wholeTimeline.add(
+            new TimelineEntry(id: int.parse(entry.key), timesSeen: timesSeen));
         print("----------------------------------------------------------");
       }
+      print(wholeTimeline);
+      print(wholeTimeline.length);
       // print(body);
       // var accessToken = jsonDecode(response.body)['access_token'];
       // print("Specifically access token = " + accessToken);
@@ -82,8 +124,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     authProvider = Provider.of<AuthProvider>(context);
-     getTimeline();
+    authProvider = Provider.of<AuthProvider>(context);
     final List<Event> events = [
       new Event(name: "Person A", time: "1 PM", seen: true),
       new Event(name: "Person B", time: "2 PM", seen: false),
@@ -94,23 +135,30 @@ class HomePage extends StatelessWidget {
       new Event(name: "Person G", time: "7 PM", seen: false),
     ];
 
+    print(wholeTimeline);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
         title: const Text('Timeline'),
       ),
-      body: ListView.builder(
-        reverse: true,
-        controller: _controller,
-        itemCount: numDays,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: TimelineSection(
-                events: events), // No SingleChildScrollView needed
-          );
-        },
-      ),
+      body: FutureBuilder(
+          future: getTimeline(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            return Align(
+                alignment: Alignment.topLeft,
+                child: ListView.builder(
+                  reverse: true,
+                  controller: _controller,
+                  itemCount: numDays,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TimelineSection(
+                          events: events), // No SingleChildScrollView needed
+                    );
+                  },
+                ));
+          }),
     );
   }
 }
@@ -123,7 +171,7 @@ class TimelineSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData themey = Theme.of(context);
-    
+
     ColorScheme colorScheme = themey.colorScheme;
     authProvider = Provider.of<AuthProvider>(context);
 
@@ -225,13 +273,15 @@ class TimelineSection extends StatelessWidget {
       },
     );
   }
-   void createContact(String cluster_id, String contact_name) async {
+
+  void createContact(String cluster_id, String contact_name) async {
     final response = await http.post(
       Uri.parse('http://159.223.99.186/api/v1/create_contact'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode({'cluster_id': cluster_id, 'contact_name': contact_name}),
+      body:
+          jsonEncode({'cluster_id': cluster_id, 'contact_name': contact_name}),
     );
     if (response.statusCode == 200) {
       // print(response.body);
@@ -283,8 +333,7 @@ class editContactDialog extends StatelessWidget {
                   style: textTheme.headlineMedium,
                 )),
                 ElevatedButton(
-                    onPressed: () => {
-                      HapticFeedback.vibrate()},
+                    onPressed: () => {HapticFeedback.vibrate()},
                     child: Text("Vibes"))
               ],
             ))

@@ -196,11 +196,13 @@ class DevicePage extends StatelessWidget {
         realCharacteristics[WIFI_CONNECT_UUID] as BluetoothCharacteristic, "1");
   }
 
-  Future writeToVibrator(int vibe) {
+  Future writeToVibrator(int vibe) async {
     if(!_isDeviceConnected.value){
       print("Device not connected");
-      // return Future<void>.value();
+      await ScanForBluetoothDevices();
+      await Future.delayed(Duration(seconds:30));      // return Future<void>.value();
     }
+      print("Done with allat");
         print("Vibration Service: $VIBRATOR_SERVICE_UUID");
         print("Vibration Char: $VIBRATOR_CTRL_UUID");
         print("Services length: $realServices.length");

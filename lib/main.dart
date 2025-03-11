@@ -21,7 +21,6 @@ Future<void> handleNotification(RemoteMessage message) async {
   await Firebase.initializeApp();
   yahoo = "poopoo";
   print("Poopooo");
-  await deviceWidget.DevicePage().ScanForBluetoothDevices();
   await deviceWidget.DevicePage().writeToVibrator(1);
   print(message);
   print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
@@ -143,11 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         bottomNavigationBar: ColoredBox(
           color: colorScheme.primary,
-          child: GestureDetector(
-              onDoubleTap: () {
-                print(yahoo);
-              },
-              child: TabBar(
+          child: TabBar(
                 tabs: [
                   Tab(
                     text: "Upload",
@@ -179,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 indicatorColor: colorScheme.secondary,
                 unselectedLabelColor: colorScheme.secondary,
                 labelColor: colorScheme.secondary,
-              )),
+              ),
         ));
   }
 }
