@@ -172,7 +172,6 @@ def upload_image():
                     "title": "Contact Seen!",  # Duplicate notification content in data
                     "body": f"{closest_match['name']}",
                     "message_type": "background_message",  # Add a marker to identify this message
-                    "timestamp": str(int(time.time())),  # Add timestamp for tracking
                 },
                 token=user_fb_token,
                 # Add APNS configuration for high priority
