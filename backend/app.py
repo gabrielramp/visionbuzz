@@ -170,6 +170,25 @@ def upload_image():
                     "vib_pattern": str(vib_pattern),
                 },
                 token=user_fb_token,
+                # Add APNS configuration for high priority
+                apns=messaging.APNSConfig(
+                    headers={
+                        "apns-priority": "10",  # 10 is highest priority, 5 is normal
+                        "apns-push-type": "alert",
+                    },
+                    payload=messaging.APNSPayload(
+                        aps=messaging.Aps(
+                            alert=messaging.ApsAlert(
+                                title="Contact Seen!", body=f"{closest_match['name']}"
+                            ),
+                            sound="default",
+                            badge=1,
+                            # Use time-sensitive or critical for high priority
+                            # Note: critical requires Apple entitlement
+                            interruption_level="time-sensitive",
+                        )
+                    ),
+                ),
             )
             response = messaging.send(msg)
             print("Successfully sent msg:", response)
