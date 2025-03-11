@@ -240,7 +240,8 @@ class DatabaseService:
                 cur.execute(
                     """
                     DELETE FROM contacts
-                    WHERE uid = %s AND cid = %s;
+                    WHERE uid = %s AND cid = %s 
+                    RETURNING cid;
                     """,
                     (
                         uid,
@@ -248,11 +249,9 @@ class DatabaseService:
                     ),
                 )
 
-                cur.fetchall()
-                print(cur)
-                cid = cur
-
-                return True
+                res = cur.fetchone()
+                conn.commit()
+                return res is not None
 
         return False
 
