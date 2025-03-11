@@ -116,19 +116,39 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState(fbToken: fbToken);
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
   final String fbToken;
+  late TabController _tabController;
+  int _currentIndex = 2;  // Start with Home tab selected
+  
   _MyHomePageState({required this.fbToken});
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      initialIndex: _currentIndex,
+      length: 5,
+      vsync: this,
+    );
+    
+    // Listen for tab changes
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _currentIndex = _tabController.index;
+        });
+        
+        // This will make the tab refresh when selected
+        // The widget itself will determine if it actually needs to refresh data
+      }
     });
   }
-
-  goToPage(String route) {
-    return Navigator.pushNamed(context, route);
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -136,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
         body: TabBarView(
+          controller: _tabController,
           children: [
             uploadWidget.UploadPage(),
             contactsWidget.ContactsPage(),
@@ -149,6 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
         bottomNavigationBar: ColoredBox(
           color: colorScheme.primary,
           child: TabBar(
+                controller: _tabController,
                 tabs: [
                   Tab(
                     text: "Upload",
