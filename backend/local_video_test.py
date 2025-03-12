@@ -34,7 +34,8 @@ SERVER_URL = "http://159.223.99.186"  # Online server
 def authenticate_with_test_user():
     response = requests.post(
         f"{SERVER_URL}/api/v1/login",
-        json={"username": "newAccountTest", "password": "newAccountTest"},
+        # json={"username": "newAccountTest", "password": "newAccountTest"},
+        json={"username": "fuckitnew", "password": "password"},
         # json={"username": "test6", "password": "test6"},
     )
     if response.status_code != 200:
