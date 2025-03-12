@@ -5,6 +5,7 @@ import 'dart:collection';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
+import 'dart:typed_data';
 
 class DevicePage extends StatelessWidget {
   var authProvider;
@@ -162,10 +163,18 @@ class DevicePage extends StatelessWidget {
     return c.read();
   }
 
-  Future writeToCharacteristic(BluetoothCharacteristic c, String input) async {
+  Future writeToCharacteristic(BluetoothCharacteristic c, String input, [bool isUint=false]) async {
+    List<int> UintSubstitute = [0];
+    if(isUint){
+      UintSubstitute[0] = int.parse(input);
+      return c.write(UintSubstitute);
+    }
+    else{
     print("Writing " + input + " to " + c.uuid.toString());
     List<int> chars = input.runes.toList();
-    c.write(chars);
+    return c.write(chars);
+
+    }
     // c.write(chars.sublist(0, ((chars.length - 1) / 2).round()));
     // c.write(chars.sublist(((chars.length - 1) / 2).round(), chars.length - 1));
 
@@ -173,8 +182,9 @@ class DevicePage extends StatelessWidget {
     // print("Written");
     // await readCharacteristic(c);
 
-    return c.write(chars);
+    // return c.write(chars);
   }
+  
 
   Future writeToWifi(String username, String password) {
     BluetoothService wifiService =
@@ -211,7 +221,7 @@ class DevicePage extends StatelessWidget {
         realServices[VIBRATOR_SERVICE_UUID] as BluetoothService;
       if (vibrationService == null) print("NO VIBRATION SERVICE");
       if (realCharacteristics[VIBRATOR_CTRL_UUID] == null) print("NO VIBRATION CHAR");
-    return writeToCharacteristic(realCharacteristics[VIBRATOR_CTRL_UUID] as BluetoothCharacteristic, vibe.toString());
+    return writeToCharacteristic(realCharacteristics[VIBRATOR_CTRL_UUID] as BluetoothCharacteristic, vibe.toString(), true);
   }
   // Future readCharValue(Future<List<int>> val) async {
   //   for (var indie in val) {
