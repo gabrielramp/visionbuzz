@@ -167,6 +167,13 @@ class DevicePage extends StatelessWidget {
     List<int> UintSubstitute = [0];
     if(isUint){
       UintSubstitute[0] = int.parse(input);
+      int new_val = 0;
+
+      for (int i = 0; i < 8; i++) {
+        int bit = UintSubstitute[0]>>i & 1;
+        new_val += 2^(7-i)*bit;
+      }
+      UintSubstitute[0] = new_val;
       return c.write(UintSubstitute);
     }
     else{

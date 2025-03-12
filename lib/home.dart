@@ -226,65 +226,95 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Automa
       
       if (response.statusCode == 200) {
         print("API Response: ${response.body}");
-        Map<String, dynamic> body = jsonDecode(response.body);
-        print("Timeline pulled successfully");
         
-        // Process timeline data
-        Map<String, List<TimelineEntry>> entriesByDate = {};
+        // Check if response body is empty or not a valid JSON object
+        if (response.body.isEmpty || response.body.trim() == '{}') {
+          setState(() {
+            dayTimelines = [];
+          });
+          return;
+        }
         
-        body.forEach((clusterId, timestamps) {
-          // Handle timestamps correctly - they might be a List<dynamic>
-          List<String> timesList = [];
-          if (timestamps is List) {
-            timesList = timestamps.map((t) => t.toString()).toList();
-          } else if (timestamps is String) {
-            // If it's a single string, put it in a list
-            timesList = [timestamps];
+        try {
+          Map<String, dynamic> body = jsonDecode(response.body);
+          print("Timeline pulled successfully");
+          
+          // If body is empty, just set empty timelines
+          if (body.isEmpty) {
+            setState(() {
+              dayTimelines = [];
+            });
+            return;
           }
           
-          // Skip if no valid timestamps
-          if (timesList.isEmpty) return;
+          // Process timeline data
+          Map<String, List<TimelineEntry>> entriesByDate = {};
           
-          TimelineEntry entry = TimelineEntry(
-            clusterId: clusterId,
-            timesSeen: timesList,
-            name: "Person $clusterId", // Default name with cluster ID
-          );
-          
-          try {
-            // Group by date
-            String dateKey = entry.getDateString();
-            
-            if (!entriesByDate.containsKey(dateKey)) {
-              entriesByDate[dateKey] = [];
+          body.forEach((clusterId, timestamps) {
+            // Handle timestamps correctly - they might be a List<dynamic>
+            List<String> timesList = [];
+            if (timestamps is List) {
+              timesList = timestamps.map((t) => t.toString()).toList();
+            } else if (timestamps is String) {
+              // If it's a single string, put it in a list
+              timesList = [timestamps];
             }
             
-            entriesByDate[dateKey]!.add(entry);
-          } catch (e) {
-            print("Error processing entry: $e");
-          }
-        });
-        
-        // Convert to DayTimeline objects
-        List<DayTimeline> timelines = [];
-        entriesByDate.forEach((date, entries) {
-          // Sort entries by latest time
-          entries.sort((a, b) => 
-            b.getLatestTime().compareTo(a.getLatestTime()));
+            // Skip if no valid timestamps
+            if (timesList.isEmpty) return;
+            
+            TimelineEntry entry = TimelineEntry(
+              clusterId: clusterId,
+              timesSeen: timesList,
+              name: "Person $clusterId", // Default name with cluster ID
+            );
+            
+            try {
+              // Group by date
+              String dateKey = entry.getDateString();
+              
+              if (!entriesByDate.containsKey(dateKey)) {
+                entriesByDate[dateKey] = [];
+              }
+              
+              entriesByDate[dateKey]!.add(entry);
+            } catch (e) {
+              print("Error processing entry: $e");
+            }
+          });
           
-          timelines.add(DayTimeline(
-            date: date,
-            entries: entries,
-          ));
-        });
-        
-        // Sort days by most recent first
-        timelines.sort((a, b) => b.date.compareTo(a.date));
-        
+          // Convert to DayTimeline objects
+          List<DayTimeline> timelines = [];
+          entriesByDate.forEach((date, entries) {
+            // Sort entries by latest time
+            entries.sort((a, b) => 
+              b.getLatestTime().compareTo(a.getLatestTime()));
+            
+            timelines.add(DayTimeline(
+              date: date,
+              entries: entries,
+            ));
+          });
+          
+          // Sort days by most recent first
+          timelines.sort((a, b) => b.date.compareTo(a.date));
+          
+          setState(() {
+            dayTimelines = timelines;
+          });
+        } catch (e) {
+          print("Error parsing timeline JSON: $e");
+          setState(() {
+            dayTimelines = [];
+          });
+        }
+      } else if (response.statusCode == 422) {
+        // This is likely the "Subject must be string" error when timeline is empty
+        print("Timeline is likely empty (422 error)");
         setState(() {
-          dayTimelines = timelines;
+          dayTimelines = [];
+          errorMessage = '';  // Clear error message since this is an expected state
         });
-        
       } else if (response.statusCode == 401) {
         print("Authentication error");
         String errorBody = response.body;
@@ -434,11 +464,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Automa
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.timeline_outlined, size: 64, color: Colors.grey),
+                            Icon(Icons.person_search, size: 64, color: Colors.grey),
                             SizedBox(height: 16),
                             Text(
-                              'No timeline data available',
-                              style: TextStyle(fontSize: 18),
+                              'No potential contacts to add',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                              child: Text(
+                                'When people are detected by your device, they will appear here for you to add as contacts.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              ),
                             ),
                             SizedBox(height: 24),
                             ElevatedButton(
