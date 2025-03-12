@@ -129,13 +129,13 @@ def upload_image():
     except Exception as e:
         return jsonify({"error": "Invalid image stream"}), 400
 
-    upload_folder = "test_img_folder"
-    filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+    # upload_folder = "test_img_folder"
+    # filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
 
-    os.makedirs(upload_folder, exist_ok=True)
-    file_path = os.path.join(upload_folder, filename)
-    with open(file_path, "wb") as f:
-        f.write(request.data)
+    # os.makedirs(upload_folder, exist_ok=True)
+    # file_path = os.path.join(upload_folder, filename)
+    # with open(file_path, "wb") as f:
+    #     f.write(request.data)
 
     img = img.convert("RGB")
     frame = np.array(img)
