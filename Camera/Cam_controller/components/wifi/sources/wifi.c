@@ -574,7 +574,7 @@ esp_err_t wifi_connect_cb(void)
 esp_err_t wifi_send_img(camera_fb_t *img)
 {
     const static esp_http_client_config_t http_config = {
-        .url = "http://159.223.99.186/api/v1/upload_image",
+        .url = "http://159.223.99.186/api/v1/test_upload",
         .event_handler = http_event_handler, 
         .method = HTTP_METHOD_POST,
         .is_async = false
@@ -591,8 +591,8 @@ esp_err_t wifi_send_img(camera_fb_t *img)
 
     static char auth_header[513];
 
-    strncpy(auth_header, "Bearer ", 7);
-    strncpy(&(auth_header[7]), _access_token, _access_token_len);
+    // strncpy(auth_header, "Bearer ", 7);
+    // strncpy(&(auth_header[7]), _access_token, _access_token_len);
 
     /*
     for (int i = 0; i < _access_token_len; i++)
@@ -603,11 +603,11 @@ esp_err_t wifi_send_img(camera_fb_t *img)
     }
         */
 
-    printf("\n");
-    fflush(stdout);
+    // printf("\n");
+    // fflush(stdout);
     
-    esp_err_t err = esp_http_client_set_header(http_handle, "Authorization", &(auth_header[0]));
-    err |= esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");
+    // esp_err_t err = esp_http_client_set_header(http_handle, "Authorization", &(auth_header[0]));
+    esp_err_t err = esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");
 
     if (err)
     {

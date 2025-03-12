@@ -34,7 +34,7 @@ void app_main(void)
     printf("woah look my code is running\n");
     fflush(stdout);
 
-    ipc_init(12, 13, ipc_rx_cb);
+    // ipc_init(17, 5, ipc_rx_cb);
 
     vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -63,6 +63,8 @@ void app_main(void)
     wifi_set_identity((uint8_t *)"au907615", 8, 0);
     wifi_set_ssid((uint8_t *)"UCF_WPA2", 8, 0);
 
+    wifi_connect();
+
     // wifi_connect();
 
     while (!wifi_is_ready())
@@ -84,13 +86,13 @@ void app_main(void)
     {
         // wifi_print_credentials();
 
-        if (wifi_is_ready() && api_is_ready())
+        if (wifi_is_ready())//  && api_is_ready())
         {
             img = camera_get_img();
     
-            wifi_send_img(img);
+            // wifi_send_img(img);
     
-            camera_release_img(img);
+            // camera_release_img(img);
             
             vTaskDelay(pdMS_TO_TICKS(100));
         }
