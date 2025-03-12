@@ -21,8 +21,8 @@
 
 void ipc_rx_cb(uint8_t *msg, int len, uint8_t msg_id)
 {
-    printf("Msg received: %d bytes [%.*s]\n", len, len, msg);
-    fflush(stdout);
+    // printf("Msg received: %d bytes [%.*s]\n", len, len, msg);
+    // fflush(stdout);
 
     ipc_handle_msg(msg, len, msg_id);
 }

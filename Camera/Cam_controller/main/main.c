@@ -58,10 +58,10 @@ void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(500));
 
-    // wifi_set_username((uint8_t *)"au907615", 8);
-    // wifi_set_password((uint8_t *)"!!11qqQQ!!11qqQQ!!11qqQQ", 24);
-    // wifi_set_identity((uint8_t *)"au907615", 8);
-    // wifi_set_ssid((uint8_t *)"UCF_WPA2", 8);
+    wifi_set_username((uint8_t *)"au907615", 8, 0);
+    wifi_set_password((uint8_t *)"!!11qqQQ!!11qqQQ!!11qqQQ", 24, 0);
+    wifi_set_identity((uint8_t *)"au907615", 8, 0);
+    wifi_set_ssid((uint8_t *)"UCF_WPA2", 8, 0);
 
     // wifi_connect();
 
@@ -76,7 +76,7 @@ void app_main(void)
 
     // wifi_api_login();
     
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(500));
 
     camera_fb_t *img;
 

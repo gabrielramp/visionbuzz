@@ -291,8 +291,8 @@ esp_err_t ipc_handle_msg(uint8_t *msg, uint8_t len, uint8_t msg_id)
     switch (msg[0])
     {
         case IPC_ACK:
-            printf("IPC msg ack'ed - %d", msg[1]);
-            fflush(stdout);
+            // printf("IPC msg ack'ed - %d", msg[1]);
+            // fflush(stdout);
             return ESP_OK;
 
         case IPC_ERROR:

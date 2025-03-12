@@ -206,7 +206,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
             break;
 
         case HTTP_EVENT_ON_DATA:
-            // printf("HTTP data received:\n%.*s\n", evt->data_len > 256 ? 256 : evt->data_len, (char *) evt->data);
+            printf("HTTP data received:\n%.*s\n", evt->data_len > 256 ? 256 : evt->data_len, (char *) evt->data);
             http_store_data(evt);
             break;
 
@@ -593,6 +593,18 @@ esp_err_t wifi_send_img(camera_fb_t *img)
 
     strncpy(auth_header, "Bearer ", 7);
     strncpy(&(auth_header[7]), _access_token, _access_token_len);
+
+    /*
+    for (int i = 0; i < _access_token_len; i++)
+    {
+        printf("%c", _access_token[i]);
+        fflush(stdout);
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+        */
+
+    printf("\n");
+    fflush(stdout);
     
     esp_err_t err = esp_http_client_set_header(http_handle, "Authorization", &(auth_header[0]));
     err |= esp_http_client_set_header(http_handle, "Content-Type", "application/octet-stream");

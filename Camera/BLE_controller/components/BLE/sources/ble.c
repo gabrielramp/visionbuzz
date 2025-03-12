@@ -91,12 +91,12 @@ esp_err_t wifi_connect_write_cb(uint16_t len, uint16_t offset)
 
 esp_err_t api_token_write_cb(uint16_t len, uint16_t offset)
 {
-    while (len > 128)
+    while (len > 32)
     {
-        ipc_api_set_token(api_token, 128, offset);
+        ipc_api_set_token(api_token, 32, offset);
 
-        len -= 128;
-        offset += 128;
+        len -= 32;
+        offset += 32;
     }
     
     ipc_api_set_token(&(api_token[offset]), (uint8_t) len, offset);
@@ -283,6 +283,15 @@ esp_err_t ble_handle_write_evt(struct gatts_write_evt_param *write_param)
     uint16_t handle = write_param->handle;
     struct ble_service *service = NULL;
     struct ble_characteristic *characteristic = NULL;
+    
+    /*
+    for (int i = 0; i < write_param->len; i++)
+    {
+        printf("%02x (%c)\n", write_param->value[i], write_param->value[i]);
+    }
+        
+    fflush(stdout);
+    */
 
     for (uint32_t i = 1; i < BLE_NUM_SERVICES; i++)
     {
@@ -306,18 +315,41 @@ esp_err_t ble_handle_write_evt(struct gatts_write_evt_param *write_param)
     if (characteristic == NULL)
         return ESP_ERR_NOT_FOUND;
 
-    for (uint32_t i = 0; i < write_param->len; i++)
+    if (service == &ble_services[2])
     {
-        characteristic->value[write_param->offset + i] = write_param->value[i];
-    }
+        uint16_t offset = ((((uint16_t) write_param->value[0]) << 8) & 0xFF00) + write_param->value[1];
 
-    for (uint32_t i = write_param->len + write_param->offset; i < characteristic->value_len; i++)
+        printf("offset - %d\n", offset);
+        fflush(stdout);
+
+        for (uint32_t i = 0; i < write_param->len - 2; i++)
+        {
+            characteristic->value[offset + i] = write_param->value[i + 2];
+        }
+
+        for (uint32_t i = write_param->len - 2 + offset; i < characteristic->value_len; i++)
+        {
+            characteristic->value[i] = '\0';
+        }
+        
+        if (characteristic->write_cb != NULL)
+            (*characteristic->write_cb)(write_param->len - 2, offset);
+    }
+    else
     {
-        characteristic->value[i] = '\0';
-    }
+        for (uint32_t i = 0; i < write_param->len; i++)
+        {
+            characteristic->value[write_param->offset + i] = write_param->value[i];
+        }
 
-    if (characteristic->write_cb != NULL)
-        (*characteristic->write_cb)(write_param->len, write_param->offset);
+        for (uint32_t i = write_param->len + write_param->offset; i < characteristic->value_len; i++)
+        {
+            characteristic->value[i] = '\0';
+        }
+        
+        if (characteristic->write_cb != NULL)
+            (*characteristic->write_cb)(write_param->len, write_param->offset);
+    }
 
     return ESP_OK;
 }
@@ -429,6 +461,11 @@ void ble_gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_ga
                 fflush(stdout);
             }
 
+            break;
+
+        case ESP_GATTS_MTU_EVT:
+            printf("MTU updated to: %d bytes", param->mtu.mtu);
+            fflush(stdout);
             break;
 
         case ESP_GATTS_DISCONNECT_EVT:
