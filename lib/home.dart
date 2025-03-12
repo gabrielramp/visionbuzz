@@ -1,8 +1,6 @@
-// Builtin Dart Stuff
 import 'dart:math';
 import 'dart:convert';
 
-// Resource Packages
 import 'package:flutter/material.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:http/http.dart' as http;
@@ -11,8 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-// Our onboard stuff
 import 'auth_provider.dart';
+import 'contacts.dart';
 
 class Contact {
   final int cid;
@@ -122,19 +120,54 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   late AuthProvider authProvider;
   bool isLoading = true;
   String errorMessage = '';
   List<DayTimeline> dayTimelines = [];
   final ScrollController _controller = ScrollController();
+  bool _isVisible = false;
+  int _refreshCounter = 0;
+  
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadTimeline();
+      if (mounted) {
+        _checkVisibility();
+      }
     });
+  }
+  
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller.dispose();
+    super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkVisibility();
+    }
+  }
+  
+  void _checkVisibility() {
+    // This would be called when the tab becomes visible
+    bool isCurrentlyVisible = true; // In a real app, we'd check if this tab is selected
+    
+    if (isCurrentlyVisible && !_isVisible) {
+      // We've just become visible, refresh
+      _isVisible = true;
+      loadTimeline();
+    } else if (!isCurrentlyVisible && _isVisible) {
+      _isVisible = false;
+    }
   }
 
   void _scrollToBottom() {
@@ -151,6 +184,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       isLoading = true;
       errorMessage = '';
+      _refreshCounter++;
     });
 
     try {
@@ -308,6 +342,8 @@ class _HomePageState extends State<HomePage> {
         );
         // Refresh the timeline after creating a contact
         await loadTimeline();
+        // Also invalidate contacts cache so it refreshes when user navigates to contacts
+        ContactsCache.invalidate();
       } else if (response.statusCode == 401) {
         print("Authentication error");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -331,10 +367,32 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    authProvider = Provider.of<AuthProvider>(context);
+    
+    // Get username for the title (with fallback)
+    String username = authProvider.username.isNotEmpty ? 
+                      authProvider.username : "User";
+    
+    // Check visibility when building
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkVisibility();
+    });
+    
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text('Timeline'),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                "$username's Timeline",
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 22),
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -342,64 +400,70 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : errorMessage.isNotEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, size: 48, color: Colors.red),
-                        SizedBox(height: 16),
-                        Text(
-                          errorMessage,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: loadTimeline,
-                          child: Text('Try Again'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : dayTimelines.isEmpty
-                  ? Center(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await loadTimeline();
+        },
+        child: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : errorMessage.isNotEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.timeline_outlined, size: 64, color: Colors.grey),
+                          Icon(Icons.error_outline, size: 48, color: Colors.red),
                           SizedBox(height: 16),
                           Text(
-                            'No timeline data available',
-                            style: TextStyle(fontSize: 18),
+                            errorMessage,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16),
                           ),
                           SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: loadTimeline,
-                            child: Text('Refresh'),
+                            child: Text('Try Again'),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      controller: _controller,
-                      itemCount: dayTimelines.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: TimelineSection(
-                            dayTimeline: dayTimelines[index],
-                            onNameContact: (clusterId, name) => 
-                              createContact(clusterId, name),
-                          ),
-                        );
-                      },
                     ),
+                  )
+                : dayTimelines.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timeline_outlined, size: 64, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text(
+                              'No timeline data available',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            SizedBox(height: 24),
+                            ElevatedButton(
+                              onPressed: loadTimeline,
+                              child: Text('Refresh'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        key: ValueKey(_refreshCounter), // Force rebuild on refresh
+                        controller: _controller,
+                        itemCount: dayTimelines.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: TimelineSection(
+                              dayTimeline: dayTimelines[index],
+                              onNameContact: (clusterId, name) => 
+                                createContact(clusterId, name),
+                            ),
+                          );
+                        },
+                      ),
+      ),
     );
   }
 }

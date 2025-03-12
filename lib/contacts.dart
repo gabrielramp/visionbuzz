@@ -19,8 +19,20 @@ class ContactsCache {
   // Call this to force a refresh
   static void invalidate() {
     loaded = false;
+    contacts.clear();
+    contactsByLetter.clear();
+    orderedLetters.clear();
     // Increment counter to force new Future creation
     refreshCounter++;
+  }
+  
+  // Reset everything - call this during logout
+  static void reset() {
+    loaded = false;
+    contacts.clear();
+    contactsByLetter.clear();
+    orderedLetters.clear();
+    refreshCounter = 0;
   }
   
   // Organize contacts by first letter
@@ -144,7 +156,7 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
     }
     
     // Always clear data before loading - this prevents duplicates
-    ContactsCache.contacts = [];
+    ContactsCache.contacts.clear();
     
     var token = await authProvider.getToken();
     print("Fetching contacts with token: $token");
