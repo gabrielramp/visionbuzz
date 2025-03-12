@@ -164,6 +164,7 @@ def upload_image():
         print(f"hi, should send notif for {closest_match['name']}")
         if user_fb_token is not None and time_since_last_seen > config.NOTIF_COOLDOWN:
             # Notify with cloudflare
+            print(f"actually sending notif for {closest_match['name']}")
             vib_pattern = (
                 0
                 if closest_match["vib_pattern"] is None
