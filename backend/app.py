@@ -124,6 +124,11 @@ def upload_image():
     # We should use stream for less overhead & make it easier
     img_data = io.BytesIO(request.data)
 
+    try:
+        img = Image.open(img_data)
+    except Exception as e:
+        return jsonify({"error": "Invalid image stream"}), 400
+
     upload_folder = "test_img_folder"
     filename = f"test_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
 
@@ -131,10 +136,6 @@ def upload_image():
     file_path = os.path.join(upload_folder, filename)
     with open(file_path, "wb") as f:
         f.write(request.data)
-    try:
-        img = Image.open(request.data)
-    except Exception as e:
-        return jsonify({"error": "Invalid image stream"}), 400
 
     img = img.convert("RGB")
     frame = np.array(img)
