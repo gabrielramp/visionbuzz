@@ -99,6 +99,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<String?> getToken() async {
+    notifyListeners();
     return _authService.getToken();
   }
 }

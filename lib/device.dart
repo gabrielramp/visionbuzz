@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'themes.dart' as themer;
 import 'dart:collection';
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
@@ -30,7 +31,8 @@ class DevicePage extends StatelessWidget {
   static final API_SERVICE_UUID = "0002f0de-bc9a-7856-3412-004200000069";
   static final API_TOKEN_UUID = "0102f0de-bc9a-7856-3412-004200000069";
 
-  static final ValueNotifier<bool> _isDeviceConnected = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> _isDeviceConnected =
+      ValueNotifier<bool>(false);
   static final DEVICE_NAME = "August Device";
   static var realDevice;
   // 3 Services
@@ -130,10 +132,10 @@ class DevicePage extends StatelessWidget {
       for (BluetoothCharacteristic c in service.characteristics) {
         realCharacteristics[c.uuid.toString()] = c;
         print(c.uuid.toString());
-        if (c.uuid.toString() == VIBRATOR_CTRL_UUID) {
-          print("Found Vibration Char");
-          // await writeToCharacteristic(
-          //     c, await authProvider.getToken() as String ?? "");
+        if (c.uuid.toString() == API_TOKEN_UUID) {
+          print("Found Api Char");
+          await writeToCharacteristic(
+              c, (await authProvider.getToken() as String ?? "").trim());
           // print("Finished writing");
         }
         // await readCharacteristic(c); // print(c.uuid.toString());
@@ -163,24 +165,41 @@ class DevicePage extends StatelessWidget {
     return c.read();
   }
 
-  Future writeToCharacteristic(BluetoothCharacteristic c, String input, [bool isUint=false]) async {
+  Future writeToCharacteristic(BluetoothCharacteristic c, String input,
+      [bool isUint = false]) async {
     List<int> UintSubstitute = [0];
-    if(isUint){
+    if (isUint) {
       UintSubstitute[0] = int.parse(input);
       int new_val = 0;
 
       for (int i = 0; i < 8; i++) {
-        int bit = UintSubstitute[0]>>i & 1;
-        new_val += 2^(7-i)*bit;
+        int bit = UintSubstitute[0] >> i & 1;
+        new_val += 2 ^ (7 - i) * bit;
       }
       UintSubstitute[0] = new_val;
       return c.write(UintSubstitute);
-    }
-    else{
-    print("Writing " + input + " to " + c.uuid.toString());
-    List<int> chars = input.runes.toList();
-    return c.write(chars);
+    } else {
+      if (input.length > 300) {
+        List<int> bytes = utf8.encode(input); // Convert string to bytes
+        int chunkSize = 20; // Default BLE chunk size (adjust based on MTU)
 
+        for (int i = 0; i < bytes.length; i += chunkSize) {
+          List<int> chunk = new List<int>.empty(growable: true);
+          print(i);
+          chunk.add((i & 0xFF00) >> 8);
+          chunk.add(i & 0x00FF);
+          chunk.addAll(bytes.sublist(
+              i, i + chunkSize > bytes.length ? bytes.length : i + chunkSize));
+          print("Sending chunk: $chunk");
+          await c.write(chunk, withoutResponse: false);
+          // await Future.delayed(Duration(milliseconds: 100));  // Allow time between chunks
+        }
+      } else {
+        List<int> chars = input.runes.toList();
+        c.write(chars);
+        return c.write(chars);
+      }
+      print("Writing " + input + " to " + c.uuid.toString());
     }
     // c.write(chars.sublist(0, ((chars.length - 1) / 2).round()));
     // c.write(chars.sublist(((chars.length - 1) / 2).round(), chars.length - 1));
@@ -191,7 +210,6 @@ class DevicePage extends StatelessWidget {
 
     // return c.write(chars);
   }
-  
 
   Future writeToWifi(String username, String password) {
     BluetoothService wifiService =
@@ -214,21 +232,26 @@ class DevicePage extends StatelessWidget {
   }
 
   Future writeToVibrator(int vibe) async {
-    if(!_isDeviceConnected.value){
+    if (!_isDeviceConnected.value) {
       print("Device not connected");
       await ScanForBluetoothDevices();
-      await Future.delayed(Duration(seconds:30));      // return Future<void>.value();
+      await Future.delayed(
+          Duration(seconds: 30)); // return Future<void>.value();
     }
-      print("Done with allat");
-        print("Vibration Service: $VIBRATOR_SERVICE_UUID");
-        print("Vibration Char: $VIBRATOR_CTRL_UUID");
-        print("Services length: ${realServices.length}");
-        print("Chars length: ${realCharacteristics.length}");
+    print("Done with allat");
+    print("Vibration Service: $VIBRATOR_SERVICE_UUID");
+    print("Vibration Char: $VIBRATOR_CTRL_UUID");
+    print("Services length: ${realServices.length}");
+    print("Chars length: ${realCharacteristics.length}");
     BluetoothService vibrationService =
         realServices[VIBRATOR_SERVICE_UUID] as BluetoothService;
-      if (vibrationService == null) print("NO VIBRATION SERVICE");
-      if (realCharacteristics[VIBRATOR_CTRL_UUID] == null) print("NO VIBRATION CHAR");
-    return writeToCharacteristic(realCharacteristics[VIBRATOR_CTRL_UUID] as BluetoothCharacteristic, vibe.toString(), true);
+    if (vibrationService == null) print("NO VIBRATION SERVICE");
+    if (realCharacteristics[VIBRATOR_CTRL_UUID] == null)
+      print("NO VIBRATION CHAR");
+    return writeToCharacteristic(
+        realCharacteristics[VIBRATOR_CTRL_UUID] as BluetoothCharacteristic,
+        vibe.toString(),
+        true);
   }
   // Future readCharValue(Future<List<int>> val) async {
   //   for (var indie in val) {
@@ -372,7 +395,6 @@ class DevicePage extends StatelessWidget {
                                 },
                                 child: const Text('Submit Wifi'),
                               ),
-                              
                             ),
                           ),
                           Center(
@@ -393,7 +415,6 @@ class DevicePage extends StatelessWidget {
                                 },
                                 child: const Text('Vibe rate'),
                               ),
-                              
                             ),
                           )
                         ],
