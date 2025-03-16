@@ -116,6 +116,8 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
     // Check if we're visible on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        print("Mounted? $mounted");
+        print("Visible? $_isVisible");
         _checkVisibility();
       }
     });
@@ -156,7 +158,6 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
     }
     
     // Always clear data before loading - this prevents duplicates
-    ContactsCache.contacts.clear();
     
     var token = await authProvider.getToken();
     print("Fetching contacts with token: $token");
@@ -167,6 +168,8 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
         'Authorization': ('Bearer ' + token),
       },
     );
+    
+    ContactsCache.contacts.clear();
     
     if (response.statusCode == 200) {
       print("CONTACTS HERE");
@@ -687,21 +690,21 @@ class _EditContactDialogState extends State<EditContactDialog> {
       // Create a vibration pattern based on the bit pattern
       // 1 = long vibration (300ms), 0 = short vibration (100ms)
       // Each pause is 100ms
-      
+      print("Vibing");
       List<int> pattern = [];
       
       // Add first vibration without initial pause
-      pattern.add(_vibrationPattern[0] ? 300 : 100);
+      // pattern.add(_vibrationPattern[0] ? 300 : 100);
       
       // Add remaining vibrations with pauses
-      for (int i = 1; i < 8; i++) {
-        // Add pause
-        pattern.add(100);
+      for (int i = 0; i < 8; i++) {
+        // Add pause            
+        Vibration.vibrate(duration:_vibrationPattern[i] ? 300 : 100);
+        await Future.delayed(Duration(milliseconds: 600)); // Delay before retrying
+
         // Add vibration
-        pattern.add(_vibrationPattern[i] ? 300 : 100);
       }
       
-      Vibration.vibrate(pattern: pattern);
     }
   }
   
