@@ -196,6 +196,7 @@ class DevicePage extends StatelessWidget {
         }
       } else {
         List<int> chars = input.runes.toList();
+        print("Writing " + input + " to " + c.uuid.toString());
         c.write(chars);
         return c.write(chars);
       }
@@ -215,15 +216,15 @@ class DevicePage extends StatelessWidget {
     BluetoothService wifiService =
         realServices[WIFI_SERVICE_UUID] as BluetoothService;
     if (wifiService == null) print("NO WIFI SERVICE");
-    writeToCharacteristic(
-        realCharacteristics[WIFI_USERNAME_UUID] as BluetoothCharacteristic,
-        username);
-    writeToCharacteristic(
-        realCharacteristics[WIFI_IDENTITY_UUID] as BluetoothCharacteristic,
-        username);
-    writeToCharacteristic(
-        realCharacteristics[WIFI_PASSWORD_UUID] as BluetoothCharacteristic,
-        password);
+    // writeToCharacteristic(
+    //     realCharacteristics[WIFI_USERNAME_UUID] as BluetoothCharacteristic,
+    //     username);
+    // writeToCharacteristic(
+    //     realCharacteristics[WIFI_IDENTITY_UUID] as BluetoothCharacteristic,
+    //     username);
+    // writeToCharacteristic(
+    //     realCharacteristics[WIFI_PASSWORD_UUID] as BluetoothCharacteristic,
+    //     password);
     writeToCharacteristic(
         realCharacteristics[WIFI_SSID_UUID] as BluetoothCharacteristic,
         "UCF_WPA2");
