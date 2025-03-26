@@ -20,7 +20,7 @@ class Config:
     TEMP_EMBED_TIME_TO_LIVE = timedelta(days=1)
 
     # DBSCAN HYPERPARAMETESR
-    CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.6"))
+    CLUSTER_RADIUS = float(os.getenv("CLUSTER_RADIUS", "0.4"))
     CLUSTER_POINTS = int(os.getenv("CLUSTER_POINTS", "3"))
     MINIMUM_CLUSTER_SIZE = int(
         os.getenv("MINIMUM_CLUSTER_SIZE", "10")
@@ -34,7 +34,7 @@ class Config:
     YUNET_PATH = os.getenv("YUNET_PATH", "../models/face_detection_yunet_2023mar.onnx")
     RECOG_PATH = os.getenv("RECOG_PATH", "../models/arcface_int8.onnx")
 
-    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.64"))
+    FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.45"))
 
 
 class DevelopmentConfig(Config):
