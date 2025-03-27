@@ -574,7 +574,7 @@ esp_err_t wifi_connect_cb(void)
 esp_err_t wifi_send_img(camera_fb_t *img)
 {
     const static esp_http_client_config_t http_config = {
-        .url = "http://159.223.99.186/api/v1/test_upload",
+        .url = "http://137.184.156.253/api/v1/test_upload",
         .event_handler = http_event_handler, 
         .method = HTTP_METHOD_POST,
         .is_async = false

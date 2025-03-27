@@ -36,11 +36,11 @@ void app_main(void)
 
     // ipc_init(17, 5, ipc_rx_cb);
 
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    // vTaskDelay(pdMS_TO_TICKS(2000));
 
-    wifi_init();
+    // wifi_init();
     
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(1000));
     
     esp_err_t err = camera_init();
 
@@ -58,27 +58,27 @@ void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(500));
 
-    wifi_set_username((uint8_t *)"au907615", 8, 0);
-    wifi_set_password((uint8_t *)"!!11qqQQ!!11qqQQ!!11qqQQ", 24, 0);
-    wifi_set_identity((uint8_t *)"au907615", 8, 0);
-    wifi_set_ssid((uint8_t *)"UCF_WPA2", 8, 0);
-
-    wifi_connect();
+    // wifi_set_username((uint8_t *)"au907615", 8, 0);
+    // wifi_set_password((uint8_t *)"!!11qqQQ!!11qqQQ!!11qqQQ", 24, 0);
+   //  wifi_set_identity((uint8_t *)"au907615", 8, 0);
+    // wifi_set_ssid((uint8_t *)"UCF_WPA2", 8, 0);
 
     // wifi_connect();
 
+    // wifi_connect();
+/*
     while (!wifi_is_ready())
     {
         wifi_print_credentials();
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
-
+*/
     // wifi_set_api_username((uint8_t *)"test7", 5, 0);
     // wifi_set_api_password((uint8_t *)"test7", 5, 0);
 
     // wifi_api_login();
     
-    vTaskDelay(pdMS_TO_TICKS(500));
+    // vTaskDelay(pdMS_TO_TICKS(500));
 
     camera_fb_t *img;
 
@@ -86,7 +86,7 @@ void app_main(void)
     {
         // wifi_print_credentials();
 
-        if (wifi_is_ready())//  && api_is_ready())
+        // if (wifi_is_ready())//  && api_is_ready())
         {
             img = camera_get_img();
     
@@ -96,13 +96,13 @@ void app_main(void)
             
             vTaskDelay(pdMS_TO_TICKS(100));
         }
-        else
+        /* else
         {
             vTaskDelay(pdMS_TO_TICKS(5000));
-        }
+        }*/
     }
 
-    wifi_disconnect();
+    // wifi_disconnect();
 
     // vTaskStartScheduler();
 }
