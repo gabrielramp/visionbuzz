@@ -45,7 +45,7 @@ static struct ble_characteristic vibrator_characteristics[BLE_NUM_VIBRATOR_CHARA
 static struct ble_characteristic wifi_characteristics[BLE_NUM_WIFI_CHARACTERISTICS];
 static struct ble_characteristic api_characteristics[BLE_NUM_API_CHARACTERISTICS];
 
-static uint32_t vibrator_ctrl_value = 0;
+static uint8_t *vibrator_ctrl_value = NULL;
 static uint8_t wifi_username[33];
 static uint8_t wifi_identity[33];
 static uint8_t wifi_password[33];
@@ -592,6 +592,8 @@ esp_err_t ble_init(void)
     ERR_CHECK(ret);
 
     ble_init_task = xTaskGetCurrentTaskHandle();
+
+    vibrator_ctrl_value = led_get_ble_val();
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     ret = esp_bt_controller_init(&bt_cfg);

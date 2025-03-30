@@ -20,17 +20,17 @@ void led_task_fn(void *args)
 
     while (true)
     {
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vTaskDelay(pdMS_TO_TICKS(1000));
         // printf("Task is alive\n");
         // fflush(stdout);
 
         if (pulse_counter != 0)
         {
             led_on(20);
-            vTaskDelay(pdMS_TO_TICKS(led_ble_val % 2 == 1 ? PULSE_MS_1 : PULSE_MS_0));
+            vTaskDelay(pdMS_TO_TICKS(((led_ble_val >> 7) % 2) != 0 ? PULSE_MS_1 : PULSE_MS_0));
             led_off(20);
             vTaskDelay(pdMS_TO_TICKS(PULSE_MS_PAUSE));
-            led_ble_val >>= 1;
+            led_ble_val <<= 1;
             pulse_counter--;
         }
         else
