@@ -217,7 +217,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Automa
     
     try {
       final response = await http.get(
-        Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
+        Uri.parse('http://137.184.156.253/api/v1/pull_timeline'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': "Bearer $token",
@@ -354,7 +354,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Automa
     
     try {
       final response = await http.post(
-        Uri.parse('http://159.223.99.186/api/v1/create_contact'),
+        Uri.parse('http://137.184.156.253/api/v1/create_contact'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': "Bearer $token",

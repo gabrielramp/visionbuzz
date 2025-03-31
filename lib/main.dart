@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import 'contacts.dart' as contactsWidget;
 import 'upload.dart' as uploadWidget;
@@ -16,19 +17,49 @@ import 'auth_provider.dart';
 
 @pragma('vm:entry-point')
 Future<void> handleForegroundNotifications(RemoteMessage message) async {
+  FlutterTts flutterTts = FlutterTts();
   print("Foregrounded");
-  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
   print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
   print("ID: ${message.messageId}");
+  flutterTts.setLanguage("en-US");
+
+  flutterTts.setSpeechRate(0.5);
+
+  flutterTts.setVolume(0.1);
+
+  flutterTts.setPitch(1.0);
+
+  flutterTts.isLanguageAvailable("en-US");
+  // await flutterTts.speak("Foreground notification type shit");
+  await flutterTts.speak("${message.data['body']} seen!");
+  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
+
 }
+// CJ CHANGE -- MAYBE SWAP OOOP HERE, DO DEVICE VIBRATIONS BEFORE TTS?
+// ONLY ISSUE IS THAT SOMETIMES IT DOES RECONNECT WHEN VIBRATION, SO IF DEVICE ISN'T FOUND
+// IT WON'T DO SPEECH IF SPEECH COMES SECOND 
 
 @pragma('vm:entry-point')
 Future<void> handleBackgroundNotifications(RemoteMessage message) async {
   await Firebase.initializeApp();
+  FlutterTts flutterTts = FlutterTts();
+
   print("Background notification");
+  flutterTts.setLanguage("en-US");
+
+  flutterTts.setSpeechRate(0.5);
+
+  flutterTts.setVolume(0.1);
+
+  flutterTts.setPitch(1.0);
+
+  flutterTts.isLanguageAvailable("en-US");
+  // await flutterTts.speak("Background notification type shit");
+  await flutterTts.speak("${message.data['body']} seen!");
   await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
   print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
   print("ID: ${message.messageId}");
+
 }
 
 void main() async {
@@ -62,6 +93,7 @@ void main() async {
   // Get the device token
   String? token = await messaging.getToken();
   final FlutterSecureStorage keyStore = const FlutterSecureStorage();
+  print("App started");
   
   print("Firebase device token: $token");
   
@@ -69,6 +101,7 @@ void main() async {
     create: (_) => AuthProvider(), 
     child: MyApp(fbToken: token as String)
   ));
+  
 }
 
 const double iconSize = 40;
@@ -134,8 +167,7 @@ class MainAppScreen extends StatefulWidget {
 
 class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _currentIndex = 2;  // Start with Home tab selected
-  
+  int _currentIndex = 4;  // Start with Home tab selected - INIT START THINGY
   @override
   void initState() {
     super.initState();
@@ -173,7 +205,7 @@ class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProvider
           contactsWidget.ContactsPage(),
           homeWidget.HomePage(),
           deviceWidget.DevicePage(),
-          SettingsPage(
+          settingsWidget.SettingsPage(
             fbToken: widget.fbToken,
             onLogout: widget.onLogout,
           ),
@@ -220,154 +252,3 @@ class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProvider
   }
 }
 
-// Updated Settings Page that only has logout (no login/register)
-class SettingsPage extends StatelessWidget {
-  final String fbToken;
-  final VoidCallback onLogout;
-  
-  SettingsPage({
-    required this.fbToken,
-    required this.onLogout,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-    ColorScheme colorScheme = theme.colorScheme;
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: false,
-      ),
-      body: ListView(
-        children: [
-          // Account section
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.grey[100],
-            child: Text(
-              'ACCOUNT',
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          
-          // Firebase token info
-          ListTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Device Information'),
-            subtitle: Text('Your device is registered with our service'),
-            onTap: () {
-              // Show device token info
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Device Token'),
-                  content: SingleChildScrollView(
-                    child: Text(
-                      fbToken,
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('CLOSE'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          
-          Divider(),
-          
-          // Theme settings (placeholder for now)
-          ListTile(
-            leading: Icon(Icons.color_lens),
-            title: Text('App Theme'),
-            subtitle: Text('Change app appearance'),
-            onTap: () {
-              // Theme settings functionality could be added here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Theme settings not implemented yet')),
-              );
-            },
-          ),
-          
-          Divider(),
-          
-          // Notification settings (placeholder for now)
-          ListTile(
-            leading: Icon(Icons.notifications),
-            title: Text('Notifications'),
-            subtitle: Text('Manage notification settings'),
-            onTap: () {
-              // Notification settings functionality could be added here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Notification settings not implemented yet')),
-              );
-            },
-          ),
-          
-          Divider(),
-          
-          // Logout option
-          ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: Text(
-              'Logout',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            onTap: () {
-              // Show confirmation dialog
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Confirm Logout'),
-                  content: Text('Are you sure you want to log out?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('CANCEL'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Call the onLogout callback
-                        onLogout();
-                      },
-                      child: Text(
-                        'LOGOUT',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          
-          SizedBox(height: 50),
-          
-          // App version info
-          Center(
-            child: Text(
-              'VisionBuzz v1.0.0',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

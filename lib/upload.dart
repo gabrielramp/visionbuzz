@@ -11,16 +11,21 @@ class UploadPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Page'),
-      ),
-      body: ListView.builder(
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: TimelineSection(), // No SingleChildScrollView needed
-          );
-        },
+          title: const Text('About the Team'),
+          centerTitle: false,
+
+        ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "Our team is a group of highly skilled professionals who are passionate about their work. We are dedicated to providing the best possible service to our clients. Our team is made up of designers, developers, and project managers who work together to create innovative solutions for our clients. We are committed to delivering high-quality work on time and within budget. Our team is always looking for new challenges and opportunities to grow and improve. We are excited to work with you on your next project!",
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+
+        ],
       ),
     );
   }

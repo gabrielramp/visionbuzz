@@ -8,314 +8,175 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'auth_provider.dart';
 
+// Updated Settings Page that only has logout (no login/register)
 class SettingsPage extends StatelessWidget {
   final String fbToken;
-  SettingsPage({super.key, required this.fbToken});
-  var authProvider;
-
-  final List<String> settingsHeaders = <String>[
-    'Login & Registration',
-    'Account',
-    'Logout',
-    ''
-  ];
-
-  Future<http.Response> makeGetCall() {
-    return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
-  }
-  // 401 = Username taken
-  // 200 = hunky dory
-
-  final List<int> sectionLengths = <int>[2, 2, 0];
+  final VoidCallback onLogout;
+  
+  SettingsPage({
+    required this.fbToken,
+    required this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
-    authProvider = Provider.of<AuthProvider>(context);
-
+    ThemeData theme = Theme.of(context);
+    ColorScheme colorScheme = theme.colorScheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         centerTitle: false,
       ),
-      body: Align(
-        alignment: Alignment.topLeft,
-        child: SettingsList(
-          sections: [
-            SettingsSection(
-              title: Text('Login & Registration'),
-              tiles: <SettingsTile>[
-                SettingsTile.navigation(
-                  leading: Icon(Icons.login),
-                  title: Text('Login'),
-                  onPressed: (context) {
-                    // Custom onPressed action
-                    clickedMe(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AccountScreen(header: "Login", fbToken:this.fbToken),
-                      ),
-                    );
-                  },
-                  // value: Text('English'),
-                ),
-                SettingsTile.navigation(
-                  leading: Icon(Icons.app_registration),
-                  title: Text('Register'),
-                  onPressed: (context) {
-                    // Custom onPressed action
-                    clickedMe(context);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AccountScreen(header: "Register", fbToken:this.fbToken),
-                      ),
-                    );
-                  },
-                  // value: Text('English'),
-                ),
-                SettingsTile.navigation(
-                  leading: Icon(Icons.logout),
-                  title: Text('Logout'),
-                  onPressed: (context) {
-                    // Custom onPressed action
-                    print("Logged Out");
-
-                    authProvider.logout();
-                  },
-                  // value: Text('English'),
-                ),
-                // SettingsTile.switchTile(
-                //   onToggle: (value) {},
-                //   initialValue: true,
-                //   leading: Icon(Icons.format_paint),
-                //   title: Text('Enable custom theme'),
-                // ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  dynamic clickedMe(BuildContext context) {
-    print("FUCK");
-  }
-
-  Widget settingsSections(BuildContext context) {
-    ThemeData themey = Theme.of(context);
-    ColorScheme colorScheme = themey.colorScheme;
-    TextTheme textTheme = themey.textTheme;
-    return ListView.separated(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(8),
-      itemCount: 3,
-      itemBuilder: (BuildContext context, int index) {
-        return Column(
-            // height: 50,
-            // color: Colors.amber[colorCodes[index]],
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  settingsHeaders[index],
-                  style: textTheme.headlineMedium,
-                ),
+      body: ListView(
+        children: [
+          // Account section
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.grey[100],
+            child: Text(
+              'ACCOUNT',
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
               ),
-              settingsRows(context, sectionLengths[index], 'C')
-            ]);
-      },
-      separatorBuilder: (BuildContext context, int index) =>
-          Divider(color: colorScheme.primary, thickness: 1, height: 2),
-    );
-  }
-
-  Widget settingsRows(
-      BuildContext context, int contactsInSection, String startsWith) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(8),
-      itemCount: contactsInSection,
-      itemBuilder: (BuildContext context, int index) {
-        return individualSetting(
-            context, "${startsWith} Contact #${index + 1}");
-      },
-      separatorBuilder: (BuildContext context, int index) => Divider(
-        color: colorScheme.primary,
-      ),
-    );
-  }
-
-  Widget individualSetting(BuildContext context, String name) {
-    ThemeData themey = Theme.of(context);
-    ColorScheme colorScheme = themey.colorScheme;
-    TextTheme textTheme = themey.textTheme;
-    return Container(
-        // color: Colors.red,
-        height: 75,
-        // width: MediaQuery.of(context).size.width,
-        child: FractionallySizedBox(
-          heightFactor: 1,
-          widthFactor: 1,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                Text(
-                  name,
-                  style: textTheme.headlineSmall,
-                )
-              ],
             ),
           ),
-        ));
-  }
-}
-
-final _formKey = GlobalKey<FormState>(); // CJ - Check this out later
-
-class AccountScreen extends StatelessWidget {
-  final String header;
-  var authProvider;
-  final String fbToken;
-
-  AccountScreen({required this.header, required this.fbToken});
-
-  void register(String username, String password, String token) async {
-    final response = await http.post(
-      Uri.parse('http://159.223.99.186/api/v1/register'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(
-          <String, String>{'username': username, 'password': password, 'firebase_token': token}),
-    );
-    if (response.statusCode == 200) {
-      // print(response.body);
-      print("REGISTER PASS");
-      var accessToken = jsonDecode(response.body)['access_token'];
-      print("Specifically access token = " + accessToken);
-      authProvider.login(accessToken);
-    } else if (response.statusCode == 401) {
-      print("Username taken");
-    } else {
-      print("Something went wrong");
-    }
-  }
-
-  void login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('http://159.223.99.186/api/v1/login'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(
-          <String, String>{'username': username, 'password': password}),
-    );
-    if (response.statusCode == 200) {
-      // print(response.body);
-      print("Login PASS");
-      var accessToken = jsonDecode(response.body)['access_token'];
-      print("Specifically access token = " + accessToken);
-      authProvider.login(accessToken);
-    } else if (response.statusCode == 401) {
-      print("Bad login info");
-    } else {
-      print("Something unforeseen went wrong");
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    String username = "";
-    String pwd = "";
-    this.authProvider = Provider.of<AuthProvider>(context);
-    return GestureDetector(
-        onTap: () {
-          // print("Fook");
-        },
-        behavior: HitTestBehavior.translucent,
-        child: Scaffold(
-            appBar: AppBar(
-              title: Text(header),
-              centerTitle: false,
+          
+          // Firebase token info
+          ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('Device Information'),
+            subtitle: Text('Your device is registered with our service'),
+            onTap: () {
+              // Show device token info
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Device Token'),
+                  content: SingleChildScrollView(
+                    child: Text(
+                      fbToken,
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('CLOSE'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          
+          Divider(),
+          
+          // Theme settings (placeholder for now)
+          ListTile(
+            leading: Icon(Icons.color_lens),
+            title: Text('App Theme'),
+            subtitle: Text('Change app appearance'),
+            onTap: () {
+              // Theme settings functionality could be added here
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Choose Theme:'),
+                  content: Text('This will change the primary color of the app'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => colorScheme.primary,
+                      child: Text('Blue'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Call the onLogout callback
+                        onLogout();
+                      },
+                      child: Text(
+                        'LOGOUT',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          
+          Divider(),
+          
+          // Notification settings (placeholder for now)
+          ListTile(
+            leading: Icon(Icons.notifications),
+            title: Text('Notifications'),
+            subtitle: Text('Manage notification settings'),
+            onTap: () {
+              // Notification settings functionality could be added here
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Notification settings not implemented yet')),
+              );
+            },
+          ),
+          
+          Divider(),
+          
+          // Logout option
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text(
+              'Logout',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            body: Form(
-              key: _formKey,
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          hintText: 'Enter your username',
-                        ),
-                        onSaved: (value) {
-                          username = value ?? '';
-                        },
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
-                          }
-                          return null;
-                        },
+            onTap: () {
+              // Show confirmation dialog
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Confirm Logout'),
+                  content: Text('Are you sure you want to log out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('CANCEL'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Call the onLogout callback
+                        onLogout();
+                      },
+                      child: Text(
+                        'LOGOUT',
+                        style: TextStyle(color: Colors.red),
                       ),
-                      TextFormField(
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter your password',
-                        ),
-                        onSaved: (value) {
-                          pwd = value ?? '';
-                        },
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
-                          }
-                          return null;
-                        },
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _formKey.currentState?.save();
-                            if (this.header == "Register") {
-                              register(username, pwd, fbToken);
-                              print("Pushed da register button");
-                            } else {
-                              login(username, pwd);
-                              print("Pushed da login button");
-                            }
-                            // print("Username: $username, Password:$pwd");
-                          },
-                          child: const Text('Submit'),
-                        ),
-                      ),
-                    ],
-                  )),
-            )));
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          
+          SizedBox(height: 50),
+          
+          // App version info
+          Center(
+            child: Text(
+              'VisionBuzz v1.0.0',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
-
-// class UserInfo {
-//   final String username;
-//   final String password;
-
-//   const UserInfo({required this.username, required this.password});
-
-//   factory UserInfo.fromJson(Map<String, dynamic> json) {
-//     return switch (json) {
-//       {
-//         'id': int id,
-//         'title': String title,
-//       } =>
-//         UserInfo(
-//           id: id,
-//           title: title,
-//         ),
-//       _ => throw const FormatException('Failed to load album.'),
-//     };
-// }

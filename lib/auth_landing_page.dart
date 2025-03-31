@@ -134,7 +134,7 @@ class _AuthLandingPageState extends State<AuthLandingPage> with SingleTickerProv
     
     try {
       final response = await http.post(
-        Uri.parse('http://159.223.99.186/api/v1/login'),
+        Uri.parse('http://137.184.156.253/api/v1/login'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -181,7 +181,7 @@ class _AuthLandingPageState extends State<AuthLandingPage> with SingleTickerProv
     
     try {
       final response = await http.post(
-        Uri.parse('http://159.223.99.186/api/v1/register'),
+        Uri.parse('http://137.184.156.253/api/v1/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

@@ -115,6 +115,16 @@ class DevicePage extends StatelessWidget {
     getServices(device);
   }
 
+  Future disconnectFromDevice(BluetoothDevice device) async {
+    if (device == null) {
+      print("No device found");
+      _isDeviceConnected.value = false;
+      return;
+    }
+    await device.disconnect();
+    print("Disconnected from " + device.name);
+  }
+
   Future reconnectToDevice(BluetoothDevice device) async {
     await Future.delayed(Duration(seconds: 3)); // Delay before retrying
     await device.connect();
@@ -170,13 +180,13 @@ class DevicePage extends StatelessWidget {
     List<int> UintSubstitute = [0];
     if (isUint) {
       UintSubstitute[0] = int.parse(input);
-      int new_val = 0;
+      // int new_val = 0;
 
-      for (int i = 0; i < 8; i++) {
-        int bit = UintSubstitute[0] >> i & 1;
-        new_val += 2 ^ (7 - i) * bit;
-      }
-      UintSubstitute[0] = new_val;
+      // for (int i = 0; i < 8; i++) {
+      //   int bit = UintSubstitute[0] >> i & 1;
+      //   new_val += 2 ^ (7 - i) * bit;
+      // }
+      // UintSubstitute[0] = new_val;
       return c.write(UintSubstitute);
     } else {
       if (input.length > 300) {
@@ -290,7 +300,8 @@ class DevicePage extends StatelessWidget {
                               padding: EdgeInsets.symmetric(horizontal: 70),
                               child: Text(
                                 "No Device Connected",
-                                style: textTheme.titleMedium,
+                                style: TextStyle(fontSize: 40),
+                                textAlign: TextAlign.center,
                               )),
                         ))),
                 Align(
@@ -299,7 +310,8 @@ class DevicePage extends StatelessWidget {
                     onPressed: () {
                       ScanForBluetoothDevices();
                     },
-                    child: const Text('Pair a Device'),
+                    child: const Text('Pair a Device',
+                        style: TextStyle(fontSize: 25)),
                   ),
                 )
               ],
@@ -316,12 +328,10 @@ class DevicePage extends StatelessWidget {
     TextTheme textTheme = themey.textTheme;
     return (Container(
         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-        // height: 10000,
-        // width: 10000,
         decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20))),
-          color: Colors.white,
+          // color: Colors.white,
         ),
         child: CustomPaint(
             size: Size(400, 200.toDouble()),
@@ -332,15 +342,17 @@ class DevicePage extends StatelessWidget {
               children: [
                 Flexible(
                     child: FractionallySizedBox(
-                        heightFactor: 0.35,
+                        heightFactor: 0.45,
                         widthFactor: 1,
                         child: Container(
-                          // color: none,
+                          // color: Colors.red,
+                          margin: EdgeInsets.only(bottom: 20),
                           child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 70),
                               child: Text(
                                 "Device Connected!",
-                                style: textTheme.titleMedium,
+                                style: TextStyle(fontSize: 40),
+                                textAlign: TextAlign.center,
                               )),
                         ))),
                 Form(
@@ -353,6 +365,7 @@ class DevicePage extends StatelessWidget {
                           TextFormField(
                             decoration: const InputDecoration(
                               hintText: 'Wifi Username',
+                              hintStyle: TextStyle(fontSize: 20),
                             ),
                             onChanged: (value) {
                               wifiUsername = value ?? '';
@@ -364,60 +377,132 @@ class DevicePage extends StatelessWidget {
                               return null;
                             },
                           ),
-                          TextFormField(
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              hintText: 'Wifi Password',
-                            ),
-                            onChanged: (value) {
-                              wifiPassword = value ?? '';
-                            },
-                            validator: (String? value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter some text';
-                              }
-                              return null;
-                            },
-                          ),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
+                          Container(
+                              margin: EdgeInsets.only(bottom: 90),
+                              child: TextFormField(
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  hintText: 'Wifi Password',
+                                  hintStyle: TextStyle(fontSize: 20),
+                                ),
+                                onChanged: (value) {
+                                  wifiPassword = value ?? '';
+                                },
+                                validator: (String? value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter some text';
+                                  }
+                                  return null;
+                                },
+                              )),
+                          // Center(
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.symmetric(vertical: 5),
+                          //     child: ElevatedButton(
+                          //       onPressed: () {
+                          //         writeToWifi(wifiUsername, wifiPassword);
+                          //       },
+                          //       child: const Text(
+                          //         'Submit Wifi',
+                          //         style: TextStyle(fontSize: 20),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          // Center(
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.symmetric(vertical: 5),
+                          //     child: ElevatedButton(
+                          //       onPressed: () {
+                          //         disconnectFromDevice(realDevice);
+                          //       },
+                          //       child: const Text(
+                          //         'Disconnect Device',
+                          //         style: TextStyle(fontSize: 20),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          // Center(
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.symmetric(vertical: 5),
+                          //     child: ElevatedButton(
+                          //       onPressed: () {
+                          //         writeToVibrator(1);
+                          //         print("vibing");
+                          //       },
+                          //       child: const Text(
+                          //         'Test Vibration',
+                          //         style: TextStyle(fontSize: 20),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
+                          Row(children: [
+                            SizedBox(
+                              // This SizedBox constrains the button to 25x25 dimensions
+                              width: 60,
+                              height: 60,
                               child: ElevatedButton(
                                 onPressed: () {
                                   writeToWifi(wifiUsername, wifiPassword);
-                                  // if (this.header == "Register") {
-                                  //   register(username, pwd);
-                                  //   print("Pushed da register button");
-                                  // } else {
-                                  //   login(username, pwd);
-                                  //   print("Pushed da login button");
-                                  // }
-                                  // print("Username: $username, Password:$pwd");
                                 },
-                                child: const Text('Submit Wifi'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  padding: EdgeInsets.zero,
+                                  shape: const CircleBorder(),
+                                ),
+                                child: const Icon(
+                                  Icons.wifi,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
                               ),
                             ),
-                          ),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
+                            Spacer(),
+                            SizedBox(
+                              // This SizedBox constrains the button to 25x25 dimensions
+                              width: 60,
+                              height: 60,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  disconnectFromDevice(realDevice);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  padding: EdgeInsets.zero,
+                                  shape: const CircleBorder(),
+                                ),
+                                child: const Icon(
+                                  Icons.bluetooth_disabled_rounded,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                              ),
+                            ),
+                            Spacer(), 
+                            SizedBox(
+                              // This SizedBox constrains the button to 25x25 dimensions
+                              width: 60,
+                              height: 60,
                               child: ElevatedButton(
                                 onPressed: () {
                                   writeToVibrator(1);
                                   print("vibing");
-                                  // if (this.header == "Register") {
-                                  //   register(username, pwd);
-                                  //   print("Pushed da register button");
-                                  // } else {
-                                  //   login(username, pwd);
-                                  //   print("Pushed da login button");
-                                  // }
-                                  // print("Username: $username, Password:$pwd");
                                 },
-                                child: const Text('Vibe rate'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  padding: EdgeInsets.zero,
+                                  shape: const CircleBorder(),
+                                ),
+                                child: const Icon(
+                                  Icons.vibration,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
                               ),
-                            ),
-                          )
+                            )
+                          ])
                         ],
                       )),
                 ),
@@ -443,6 +528,7 @@ class DevicePage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Device Pairing'),
+          centerTitle: false,
         ),
         body: Center(
           child: ValueListenableBuilder<bool>(
@@ -450,7 +536,8 @@ class DevicePage extends StatelessWidget {
             builder: (context, isFirst, child) {
               return _isDeviceConnected.value
                   ? deviceConnectedBox(context)
-                  : deviceDisconnectedBox(context);
+                  : deviceDisconnectedBox(
+                      context); // CHANGE THIS BACK BEFORE TESTING
             },
           ),
           // child: ElevatedButton(

@@ -53,7 +53,7 @@ final Map<String, String> months = {
 };
 
 Future<http.Response> makeGetCall() {
-  return http.get(Uri.parse('http://159.223.99.186/api/v1/register'));
+  return http.get(Uri.parse('http://137.184.156.253/api/v1/register'));
 }
 
 class HomePage extends StatelessWidget {
@@ -74,7 +74,7 @@ class HomePage extends StatelessWidget {
     var token = await authProvider.getToken();
     // print(token);
     final response = await http.get(
-      Uri.parse('http://159.223.99.186/api/v1/pull_timeline'),
+      Uri.parse('http://137.184.156.253/api/v1/pull_timeline'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': ("Bearer $token"),
@@ -281,7 +281,7 @@ class TimelineSection extends StatelessWidget {
 
   void createContact(String cluster_id, String contact_name) async {
     final response = await http.post(
-      Uri.parse('http://159.223.99.186/api/v1/create_contact'),
+      Uri.parse('http://137.184.156.253/api/v1/create_contact'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },

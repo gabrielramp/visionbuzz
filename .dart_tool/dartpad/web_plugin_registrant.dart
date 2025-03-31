@@ -10,6 +10,7 @@ import 'package:device_info_plus/src/device_info_plus_web.dart';
 import 'package:firebase_core_web/firebase_core_web.dart';
 import 'package:firebase_messaging_web/firebase_messaging_web.dart';
 import 'package:flutter_secure_storage_web/flutter_secure_storage_web.dart';
+import 'package:flutter_tts/flutter_tts_web.dart';
 import 'package:permission_handler_html/permission_handler_html.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -19,6 +20,7 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   FirebaseCoreWeb.registerWith(registrar);
   FirebaseMessagingWeb.registerWith(registrar);
   FlutterSecureStorageWeb.registerWith(registrar);
+  FlutterTtsPlugin.registerWith(registrar);
   WebPermissionHandler.registerWith(registrar);
   registrar.registerMessageHandler();
 }

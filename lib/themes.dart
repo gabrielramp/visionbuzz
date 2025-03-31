@@ -4,6 +4,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 class Themes {
+  setMainColor(Color color) {
+    _mainColor = color;
+  }
+  
   static Color _mainColor = new Color(0xff4f009e);
   static ThemeData main = ThemeData(
     useMaterial3: true,
@@ -20,6 +24,25 @@ class Themes {
     ),
     colorScheme: ColorScheme.fromSeed(
         primary: _mainColor,
+        secondary: const Color(0xffffffff),
+        // surface: const Color(0xff00000),
+        seedColor: _mainColor),
+  );
+
+  static ThemeData green = ThemeData( useMaterial3: true,
+    appBarTheme: AppBarTheme(
+        titleTextStyle: TextStyle(
+      fontSize: 45,
+      color: Colors.green,
+    )),
+    textTheme: TextTheme(
+      titleMedium: TextStyle(fontSize: 40, fontStyle: FontStyle.italic),
+      headlineMedium: TextStyle(
+          fontSize: 35, fontWeight: FontWeight.w700, color: _mainColor),
+      headlineSmall: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+    ),
+    colorScheme: ColorScheme.fromSeed(
+        primary: Colors.green,
         secondary: const Color(0xffffffff),
         // surface: const Color(0xff00000),
         seedColor: Colors.red),

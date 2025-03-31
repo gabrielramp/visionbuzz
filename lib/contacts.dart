@@ -162,7 +162,7 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
     var token = await authProvider.getToken();
     print("Fetching contacts with token: $token");
     final response = await http.get(
-      Uri.parse('http://159.223.99.186/api/v1/pull_contacts'),
+      Uri.parse('http://137.184.156.253/api/v1/pull_contacts'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': ('Bearer ' + token),
@@ -220,7 +220,7 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
     var token = await authProvider.getToken();
     
     final response = await http.delete(
-      Uri.parse("http://159.223.99.186/api/v1/delete_contact/$cid"),
+      Uri.parse("http://137.184.156.253/api/v1/delete_contact/$cid"),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': ('Bearer ' + token),
@@ -720,7 +720,7 @@ class _EditContactDialogState extends State<EditContactDialog> {
     print("Params: ${widget.contact.cid}, $name, $vibPattern");
     
     final response = await http.patch(
-      Uri.parse("http://159.223.99.186/api/v1/edit_contact/${widget.contact.cid}"),
+      Uri.parse("http://137.184.156.253/api/v1/edit_contact/${widget.contact.cid}"),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': ('Bearer ' + token),
