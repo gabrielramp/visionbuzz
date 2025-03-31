@@ -182,25 +182,6 @@ def upload_image():
                     "body": f"{closest_match['name']}",
                 },
                 token=user_fb_token,
-                # Add APNS configuration for high priority
-                apns=messaging.APNSConfig(
-                    headers={
-                        "apns-priority": "10",  # 10 is highest priority
-                        "apns-push-type": "alert",
-                    },
-                    payload=messaging.APNSPayload(
-                        aps=messaging.Aps(
-                            alert=messaging.ApsAlert(
-                                title="Contact Seen!", body=f"{closest_match['name']}"
-                            ),
-                            sound="default",
-                            badge=1,
-                            content_available=True,
-                            # Ensure "mutable-content" is set to allow for modification in the app
-                            mutable_content=1,
-                        )
-                    ),
-                ),
             )
             response = messaging.send(msg)
             print("Successfully sent msg:", response)
