@@ -175,6 +175,15 @@ def upload_image():
                 notification=messaging.Notification(
                     title="Contact Seen!",
                     body=f"{closest_match['name']}",
+                    apns=messaging.APNSConfig(
+                        payload=messaging.APNSPayload(
+                            aps=messaging.Aps(
+                                alert=messaging.ApsAlert(title=title, body=body),
+                                sound="default",
+                                badge=1,
+                            )
+                        )
+        ),
                 ),
                 data={
                     "vib_pattern": str(vib_pattern),
