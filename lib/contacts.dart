@@ -308,7 +308,10 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
         String letter = ContactsCache.orderedLetters[index];
         List<Contact> contactsInSection = ContactsCache.contactsByLetter[letter] ?? [];
         
-        return Column(
+        return Semantics(
+          label: "Contacts that begin with the letter $letter",
+          hint: "Tap on a box to edit vibration patterns and contact data",
+          child:Column(
             children: [
               Align(
                 alignment: Alignment.topLeft,
@@ -327,7 +330,7 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
                 ),
               ),
               contactsForLetter(context, letter, contactsInSection)
-            ]);
+            ]));
       },
       separatorBuilder: (BuildContext context, int index) =>
           Divider(color: colorScheme.primary, thickness: 1, height: 16),
@@ -402,9 +405,15 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
       lastSeen = lastSeen.substring(0, 18) + "...";
     }
     
-    return Container(
+    return Semantics(
+      label:"${contact.name}, Vibration Pattern: ${contact.vibration}, Last Seen: ${lastSeen} ",
+      hint:"Tap to edit the contact info for ${contact.name}",
+      enabled: true,
+      child:Container(
       padding: EdgeInsets.all(12),
-      child: Row(
+      child: Semantics(
+        enabled: false,
+        child:Row(
         children: [
           // Avatar container
           Container(
@@ -481,8 +490,8 @@ class _ContactsPageState extends State<ContactsPage> with WidgetsBindingObserver
             padding: EdgeInsets.zero,
           ),
         ],
-      ),
-    );
+      )),
+    ));
   }
 
   // Added delete confirmation dialog
@@ -573,13 +582,15 @@ class BitToggleButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Bit position label
-        Text(
+        Semantics(
+          label:"",
+          child:Text(
           '$bitPosition',
           style: TextStyle(
             fontSize: 10,
-            color: Colors.grey[600],
+            color: Colors.black,
           ),
-        ),
+        )),
         SizedBox(height: 4),
         // Toggle button
         GestureDetector(
@@ -901,7 +912,7 @@ class _EditContactDialogState extends State<EditContactDialog> {
                         children: List.generate(8, (index) {
                           return BitToggleButton(
                             value: _vibrationPattern[index],
-                            bitPosition: 7 - index,
+                            bitPosition: index,
                             activeColor: colorScheme.primary,
                             inactiveColor: Colors.grey[200]!,
                             onChanged: (value) {

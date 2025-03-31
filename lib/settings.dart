@@ -80,31 +80,10 @@ class SettingsPage extends StatelessWidget {
             subtitle: Text('Change app appearance'),
             onTap: () {
               // Theme settings functionality could be added here
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Choose Theme:'),
-                  content: Text('This will change the primary color of the app'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => colorScheme.primary,
-                      child: Text('Blue'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Call the onLogout callback
-                        onLogout();
-                      },
-                      child: Text(
-                        'LOGOUT',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Theme settings coming soon!')),
               );
-            },
+            },  
           ),
           
           Divider(),
@@ -117,7 +96,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               // Notification settings functionality could be added here
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Notification settings not implemented yet')),
+                SnackBar(content: Text('Visit device settings for notifications!')),
               );
             },
           ),

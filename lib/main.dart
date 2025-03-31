@@ -25,19 +25,19 @@ Future<void> handleForegroundNotifications(RemoteMessage message) async {
 
   flutterTts.setSpeechRate(0.5);
 
-  flutterTts.setVolume(0.1);
+  flutterTts.setVolume(1.0);
 
   flutterTts.setPitch(1.0);
 
   flutterTts.isLanguageAvailable("en-US");
   // await flutterTts.speak("Foreground notification type shit");
   await flutterTts.speak("${message.data['body']} seen!");
-  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
-
+  await deviceWidget.DevicePage()
+      .writeToVibrator(int.parse(message.data['vib_pattern']));
 }
 // CJ CHANGE -- MAYBE SWAP OOOP HERE, DO DEVICE VIBRATIONS BEFORE TTS?
 // ONLY ISSUE IS THAT SOMETIMES IT DOES RECONNECT WHEN VIBRATION, SO IF DEVICE ISN'T FOUND
-// IT WON'T DO SPEECH IF SPEECH COMES SECOND 
+// IT WON'T DO SPEECH IF SPEECH COMES SECOND
 
 @pragma('vm:entry-point')
 Future<void> handleBackgroundNotifications(RemoteMessage message) async {
@@ -49,17 +49,17 @@ Future<void> handleBackgroundNotifications(RemoteMessage message) async {
 
   flutterTts.setSpeechRate(0.5);
 
-  flutterTts.setVolume(0.1);
+  flutterTts.setVolume(1.0);
 
   flutterTts.setPitch(1.0);
 
   flutterTts.isLanguageAvailable("en-US");
   // await flutterTts.speak("Background notification type shit");
   await flutterTts.speak("${message.data['body']} seen!");
-  await deviceWidget.DevicePage().writeToVibrator(int.parse(message.data['vib_pattern']));
+  await deviceWidget.DevicePage()
+      .writeToVibrator(int.parse(message.data['vib_pattern']));
   print("Data: ${message.data}, vibe pattern: ${message.data['vib_pattern']}");
   print("ID: ${message.messageId}");
-
 }
 
 void main() async {
@@ -94,14 +94,11 @@ void main() async {
   String? token = await messaging.getToken();
   final FlutterSecureStorage keyStore = const FlutterSecureStorage();
   print("App started");
-  
+
   print("Firebase device token: $token");
-  
+
   runApp(ChangeNotifierProvider(
-    create: (_) => AuthProvider(), 
-    child: MyApp(fbToken: token as String)
-  ));
-  
+      create: (_) => AuthProvider(), child: MyApp(fbToken: token as String)));
 }
 
 const double iconSize = 40;
@@ -123,9 +120,9 @@ class MyApp extends StatelessWidget {
 // New class to handle auth state changes
 class AuthStateHandler extends StatefulWidget {
   final String fbToken;
-  
+
   AuthStateHandler({required this.fbToken});
-  
+
   @override
   _AuthStateHandlerState createState() => _AuthStateHandlerState();
 }
@@ -155,19 +152,20 @@ class _AuthStateHandlerState extends State<AuthStateHandler> {
 class MainAppScreen extends StatefulWidget {
   final String fbToken;
   final VoidCallback onLogout;
-  
+
   MainAppScreen({
-    required this.fbToken, 
+    required this.fbToken,
     required this.onLogout,
   });
-  
+
   @override
   _MainAppScreenState createState() => _MainAppScreenState();
 }
 
-class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProviderStateMixin {
+class _MainAppScreenState extends State<MainAppScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _currentIndex = 4;  // Start with Home tab selected - INIT START THINGY
+  int _currentIndex = 2; // Start with Home tab selected - INIT START THINGY
   @override
   void initState() {
     super.initState();
@@ -176,7 +174,7 @@ class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProvider
       length: 5,
       vsync: this,
     );
-    
+
     // Listen for tab changes
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -186,18 +184,19 @@ class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProvider
       }
     });
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    
+
     return Scaffold(
+      backgroundColor: colorScheme.primary,
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -211,44 +210,45 @@ class _MainAppScreenState extends State<MainAppScreen> with SingleTickerProvider
           ),
         ],
       ),
-      bottomNavigationBar: ColoredBox(
-        color: colorScheme.primary,
-        child: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(
-              text: "Upload",
-              icon: Icon(Icons.upload,
-                  size: iconSize, color: colorScheme.secondary),
-            ),
-            Tab(
-              text: "Contacts",
-              icon: Icon(Icons.person,
-                  size: iconSize, color: colorScheme.secondary),
-            ),
-            Tab(
-              text: "Home",
-              icon: Icon(Icons.home_filled,
-                  size: iconSize, color: colorScheme.secondary),
-            ),
-            Tab(
-              text: "Device",
-              icon: Icon(Icons.linked_camera,
-                  size: iconSize, color: colorScheme.secondary),
-            ),
-            Tab(
-              text: "Settings",
-              icon: Icon(Icons.settings,
-                  size: iconSize, color: colorScheme.secondary),
-            ),
-          ],
-          overlayColor: MaterialStateProperty.all(colorScheme.secondary),
-          indicatorColor: colorScheme.secondary,
-          unselectedLabelColor: colorScheme.secondary,
-          labelColor: colorScheme.secondary,
-        ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: ColoredBox(
+            color: colorScheme.primary,
+            child: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(
+                  text: "About",
+                  icon: Icon(Icons.info_outline,
+                      size: iconSize, color: colorScheme.secondary),
+                ),
+                Tab(
+                  text: "Contacts",
+                  icon: Icon(Icons.person,
+                      size: iconSize, color: colorScheme.secondary),
+                ),
+                Tab(
+                  text: "Home",
+                  icon: Icon(Icons.home_filled,
+                      size: iconSize, color: colorScheme.secondary),
+                ),
+                Tab(
+                  text: "Device",
+                  icon: Icon(Icons.linked_camera,
+                      size: iconSize, color: colorScheme.secondary),
+                ),
+                Tab(
+                  text: "Settings",
+                  icon: Icon(Icons.settings,
+                      size: iconSize, color: colorScheme.secondary),
+                ),
+              ],
+              overlayColor: MaterialStateProperty.all(colorScheme.secondary),
+              indicatorColor: colorScheme.secondary,
+              unselectedLabelColor: colorScheme.secondary,
+              labelColor: colorScheme.secondary,
+            )),
       ),
     );
   }
 }
-

@@ -440,67 +440,101 @@ class DevicePage extends StatelessWidget {
                           // ),
                           Row(children: [
                             SizedBox(
-                              // This SizedBox constrains the button to 25x25 dimensions
-                              width: 60,
-                              height: 60,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  writeToWifi(wifiUsername, wifiPassword);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorScheme.primary,
-                                  padding: EdgeInsets.zero,
-                                  shape: const CircleBorder(),
-                                ),
-                                child: const Icon(
-                                  Icons.wifi,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              ),
+                              width: 80,
+                              height: 120,
+                              child: Column(children: [
+                                Semantics(
+                                    label: "Connect Device to Wifi",
+                                    hint:
+                                        "Tap to send wifi information to the device",
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        writeToWifi(wifiUsername, wifiPassword);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: colorScheme.primary,
+                                        padding: EdgeInsets.all(10),
+                                        shape: const CircleBorder(),
+                                      ),
+                                      child: const Icon(
+                                        Icons.wifi,
+                                        color: Colors.white,
+                                        size: 50,
+                                      ),
+                                    )),
+                                Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      "Add Device Wifi",
+                                      textAlign: TextAlign.center,
+                                    ))
+                              ]),
+                            ),
+                            Spacer(),
+                            SizedBox(
+                              width: 80,
+                              height: 120,
+                              child: Column(children: [
+                                Semantics(
+                                    label: "Disconnect Bluetooth from Device",
+                                    hint:
+                                        "Tap to disconnect Bluetooth from device",
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        disconnectFromDevice(realDevice);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: colorScheme.primary,
+                                        padding: EdgeInsets.all(10),
+                                        shape: const CircleBorder(),
+                                      ),
+                                      child: const Icon(
+                                        Icons.bluetooth_disabled_rounded,
+                                        color: Colors.white,
+                                        size: 50,
+                                      ),
+                                    )),
+                                Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      "Disconnect Device",
+                                      textAlign: TextAlign.center,
+                                    ))
+                              ]),
                             ),
                             Spacer(),
                             SizedBox(
                               // This SizedBox constrains the button to 25x25 dimensions
-                              width: 60,
-                              height: 60,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  disconnectFromDevice(realDevice);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorScheme.primary,
-                                  padding: EdgeInsets.zero,
-                                  shape: const CircleBorder(),
-                                ),
-                                child: const Icon(
-                                  Icons.bluetooth_disabled_rounded,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              ),
-                            ),
-                            Spacer(), 
-                            SizedBox(
-                              // This SizedBox constrains the button to 25x25 dimensions
-                              width: 60,
-                              height: 60,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  writeToVibrator(1);
-                                  print("vibing");
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorScheme.primary,
-                                  padding: EdgeInsets.zero,
-                                  shape: const CircleBorder(),
-                                ),
-                                child: const Icon(
-                                  Icons.vibration,
-                                  color: Colors.white,
-                                  size: 50,
-                                ),
-                              ),
+                              width: 80,
+                              height: 120,
+                              child: Column(children: [
+                                Semantics(
+                                    label: "Test device vibration",
+                                    hint:
+                                        "Tap to test the vibration on the device",
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        writeToVibrator(1);
+                                        print("vibing");
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: colorScheme.primary,
+                                        padding: EdgeInsets.all(10),
+                                        shape: const CircleBorder(),
+                                      ),
+                                      child: const Icon(
+                                        Icons.vibration,
+                                        color: Colors.white,
+                                        size: 50,
+                                      ),
+                                    )),
+                                Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      "Test Vibration",
+                                      textAlign: TextAlign.center,
+                                    ))
+                              ]),
                             )
                           ])
                         ],
